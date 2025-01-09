@@ -69,6 +69,10 @@ class Board:
                 for x in range(self.width):
                     screen.blit(self.board[y].row[x], (
                         x * 120 + self.left, y * 120 + self.top))
+            if self.board[y].__class__ == River:
+                for x in range(self.width):
+                    screen.blit(self.board[y].row[x], (
+                        x * 120 + self.left, y * 120 + self.top))
 
 
 class Grass(pygame.sprite.Sprite):
@@ -103,6 +107,10 @@ class River(pygame.sprite.Sprite):
         super().__init__()
         self.image = load_image("river2.jpg")  # либо river.jpg
         self.image = pygame.transform.scale(self.image, (120, 120))
+        self.row = [choice((Log().image, self.image, self.image)),
+                    choice((Log().image, Log().image, self.image, self.image)), self.image,
+                    choice((Log().image, Log().image, self.image, self.image)),
+                    choice((Log().image, Log().image, self.image, self.image))]
 
 
 class Road(pygame.sprite.Sprite):
@@ -116,6 +124,13 @@ class Railway(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = load_image("railway.jpg")
+        self.image = pygame.transform.scale(self.image, (120, 120))
+
+
+class Log(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = load_image("log.png")
         self.image = pygame.transform.scale(self.image, (120, 120))
 
 
