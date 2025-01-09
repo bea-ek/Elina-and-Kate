@@ -4,6 +4,32 @@ from random import choice
 
 import pygame
 
+FPS = 50
+
+
+def terminate():
+    pygame.quit()
+    sys.exit()
+
+
+def start_screen():
+    pygame.init()
+    screen = pygame.display.set_mode((600, 800))
+    pygame.display.set_caption("Crazy Road)))")
+    clock = pygame.time.Clock()
+    fon = pygame.transform.scale(load_image('rules.jpg'), (600, 840))
+    screen.blit(fon, (0, 0))
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN or \
+                    event.type == pygame.MOUSEBUTTONDOWN:
+                return main()
+        pygame.display.flip()
+        clock.tick(FPS)
+
 
 def load_image(name):
     fullname = os.path.join('data', name)
@@ -50,19 +76,18 @@ class Grass(pygame.sprite.Sprite):
         super().__init__()
         self.image = load_image("grass.jpg")
         self.image = pygame.transform.scale(self.image, (120, 120))
-        self.row = [choice((Tree().image, Stone().image, self.image, self.image)),
-                    choice((Tree().image, Stone().image, self.image, self.image)), self.image,
-                    choice((Tree().image, Stone().image, self.image, self.image)),
-                    choice((Tree().image, Stone().image, self.image, self.image))]
+        self.row = [choice((Bush().image, Stone().image, self.image, self.image)),
+                    choice((Bush().image, Stone().image, self.image, self.image)), self.image,
+                    choice((Bush().image, Stone().image, self.image, self.image)),
+                    choice((Bush().image, Stone().image, self.image, self.image))]
 
 
-class Tree(pygame.sprite.Sprite):
+class Bush(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = load_image("tree.jpg")
+        self.image = load_image("bush.png")
         self.image.set_colorkey((0, 0, 0))
         self.image = pygame.transform.scale(self.image, (120, 120))
-
 
 
 class Stone(pygame.sprite.Sprite):
@@ -113,4 +138,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    start_screen()
