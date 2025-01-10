@@ -50,6 +50,7 @@ class Board:
         # Значения положения поля по умолчанию
         self.left = 0
         self.top = 0
+
         for i in range(4):
             cell = choice((Grass(), Grass(), Grass(), River(), Road(), Road(), Railway()))
             self.board[i] = cell
@@ -73,6 +74,9 @@ class Board:
                 for x in range(self.width):
                     screen.blit(self.board[y].row[x], (
                         x * 120 + self.left, y * 120 + self.top))
+            if self.board[y].__class__ == Road:
+                for x in range(self.width):
+                    screen.blit(self.board[y].row[x], (0, y * 120 + self.top))
 
 
 class Grass(pygame.sprite.Sprite):
@@ -118,6 +122,10 @@ class Road(pygame.sprite.Sprite):
         super().__init__()
         self.image = load_image("road.jpg")
         self.image = pygame.transform.scale(self.image, (120, 120))
+        self.row = [choice((Mini_Bus().image, Police_Car().image, Fire_truck().image)),
+                    choice((self.image, self.image, self.image, self.image)), self.image,
+                    choice((self.image, self.image, self.image, self.image)),
+                    choice((self.image, self.image, self.image, self.image))]
 
 
 class Railway(pygame.sprite.Sprite):
@@ -144,7 +152,7 @@ class Mini_Bus(pygame.sprite.Sprite):
 class Police_Car(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = load_image("police_cur.png")
+        self.image = load_image("police_car.png")
         self.image = pygame.transform.scale(self.image, (120, 120))
 
 
@@ -167,7 +175,6 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
         screen.fill((0, 0, 0))
-
         board.render(screen)
         pygame.display.flip()
     pygame.quit()
