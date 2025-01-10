@@ -30,6 +30,7 @@ def start_screen():
         pygame.display.flip()
         clock.tick(FPS)
 
+
 def load_image(name):
     fullname = os.path.join('data', name)
     # если файл не существует, то выходим
@@ -79,19 +80,18 @@ class Grass(pygame.sprite.Sprite):
         super().__init__()
         self.image = load_image("grass.jpg")
         self.image = pygame.transform.scale(self.image, (120, 120))
-        self.row = [choice((Tree().image, Stone().image, self.image, self.image)),
-                    choice((Tree().image, Stone().image, self.image, self.image)), self.image,
-                    choice((Tree().image, Stone().image, self.image, self.image)),
-                    choice((Tree().image, Stone().image, self.image, self.image))]
+        self.row = [choice((Bush().image, Stone().image, self.image, self.image)),
+                    choice((Bush().image, Stone().image, self.image, self.image)), self.image,
+                    choice((Bush().image, Stone().image, self.image, self.image)),
+                    choice((Bush().image, Stone().image, self.image, self.image))]
 
 
-class Tree(pygame.sprite.Sprite):
+class Bush(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = load_image("tree.jpg")
+        self.image = load_image("bush.png")
         self.image.set_colorkey((0, 0, 0))
         self.image = pygame.transform.scale(self.image, (120, 120))
-
 
 
 class Stone(pygame.sprite.Sprite):
@@ -132,6 +132,27 @@ class Log(pygame.sprite.Sprite):
         super().__init__()
         self.image = load_image("log.png")
         self.image = pygame.transform.scale(self.image, (120, 120))
+
+
+class Mini_Bus(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = load_image("mini_bus.png")
+        self.image = pygame.transform.scale(self.image, (120, 120))
+
+
+class Police_Car(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = load_image("police_cur.png")
+        self.image = pygame.transform.scale(self.image, (120, 120))
+
+
+class Fire_truck(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = load_image("fire_truck.png")
+        self.image = pygame.transform.scale(self.image, (240, 120))
 
 
 def main():
