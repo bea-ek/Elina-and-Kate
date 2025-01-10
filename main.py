@@ -76,7 +76,8 @@ class Board:
                         x * 120 + self.left, y * 120 + self.top))
             if self.board[y].__class__ == Road:
                 for x in range(self.width):
-                    screen.blit(self.board[y].row[x], (0, y * 120 + self.top))
+                    screen.blit(self.board[y].row[x], (x * 240 + self.left, y * 120 + self.top))
+
 
 
 class Grass(pygame.sprite.Sprite):
@@ -147,6 +148,7 @@ class Mini_Bus(pygame.sprite.Sprite):
         super().__init__()
         self.image = load_image("mini_bus.png")
         self.image = pygame.transform.scale(self.image, (120, 120))
+
 
 
 class Police_Car(pygame.sprite.Sprite):
