@@ -1,6 +1,6 @@
 import os
 import sys
-from random import choice
+from random import choice, random
 
 import pygame
 
@@ -8,7 +8,7 @@ FPS = 50
 
 cell_width = cell_height = 120
 
-level = ['.', '.', '#', '#', '#', '#', '#', '#']
+level = ['.', '.', 'x', 'x', 'x', 'x', 'x', 'x']
 for i in range(9):
     level.insert(0, choice(('.', '.', '.', '=', '=', '#', '~')))
 
@@ -47,18 +47,28 @@ def load_image(name):
     return image
 
 
-class Board:
-    # создание поля
-    def __init__(self):
-        self.width = 5  # Кол-во клеток в ширину
-        self.height = 7  # в высоту
-        self.board = [Grass() for _ in range(self.height)]
-        # Значения положения поля по умолчанию
-        self.left = 0
-        self.top = 0
-        for i in range(4):
-            cell = choice((Grass(), Grass(), Grass(), River(), Road(), Road(), Railway()))
-            self.board[i] = cell
+def new_row():
+    for i in range(17):
+        level[i - 1] = level[i]
+    level[16] = choice(('.', '.', '.', '=', '=', '#', '~'))
+
+
+def generate_level():
+    for y, row in enumerate(level[5:-5]):
+        if row == '.':
+            Tile('grass', y)
+        elif row == '_':
+            Tile('border', y)
+        elif row == '=':
+            Tile('road', y)
+        elif row == '#':
+            Tile('railway', y)
+        elif row == '~':
+            Tile('river', y)
+        elif row == 'x':
+            Tile('border', y)
+    # return Player(2, 10)
+
 
 # class Board:
 #     # создание поля
@@ -89,16 +99,6 @@ class Board:
 #                     screen.blit(self.board[y].row[x], (
 #                         x * 120 + self.left, y * 120 + self.top))
 
-    # отрисовка
-    def render(self, screen):
-        for y in range(self.height):
-            for x in range(self.width):
-                screen.blit(self.board[y].image, (
-                    x * 120 + self.left, y * 120 + self.top))
-            if self.board[y].__class__ == Grass:
-                for x in range(self.width):
-                    screen.blit(self.board[y].row[x], (
-                        x * 120 + self.left, y * 120 + self.top))
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_y):
@@ -107,6 +107,11 @@ class Tile(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (120*5, 120))
         self.rect = self.image.get_rect().move(
         0, cell_height * pos_y)
+        self.sprites = []
+        if tile_type == 'grass':
+            for i in range(5):
+                if i != 2:
+
 
 
 # class Grass(pygame.sprite.Sprite):
@@ -135,30 +140,34 @@ class Stone(pygame.sprite.Sprite):
         self.image = load_image("stone.jpg")
         self.image.set_colorkey((0, 0, 0))
         self.image = pygame.transform.scale(self.image, (120, 120))
+        self.rect = self.image.get_rect(left=x, top=y)
 
 
-class River(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = load_image("river2.jpg")  # либо river.jpg
-        self.image = pygame.transform.scale(self.image, (120, 120))
+# class River(pygame.sprite.Sprite):
+#     def __init__(self):
+#         super().__init__()
+#         self.image = load_image("river2.jpg")  # либо river.jpg
+#         self.image = pygame.transform.scale(self.image, (120, 120))
+#
+#
+# class Road(pygame.sprite.Sprite):
+#     def __init__(self):
+#         super().__init__()
+#         self.image = load_image("road.jpg")
+#         self.image = pygame.transform.scale(self.image, (120, 120))
+#
+#
+# class Railway(pygame.sprite.Sprite):
+#     def __init__(self):
+#         super().__init__()
+#         self.image = load_image("railway.jpg")
+#         self.image = pygame.transform.scale(self.image, (120, 120))
 
 
-class Road(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = load_image("road.jpg")
-        self.image = pygame.transform.scale(self.image, (120, 120))
-
-    # позиционировать камеру на объекте target
-    def update(self, target):
-        self.dy = -(target.rect.y + target.rect.h // 2 - self.height // 2)
-
-
-all_sprites = pygame.sprite.Group()
-tiles_group = pygame.sprite.Group()
-player_group = pygame.sprite.Group()
-
+# class Player(pygame.sprite.Sprite):
+#     def __init__(self, x, y):
+#         super().__init__(player_group, all_sprites)
+#         self.rect = self.image.get_rect(left=x, top=y)
 
 class Log(pygame.sprite.Sprite):
     def __init__(self):
@@ -189,6 +198,28 @@ class Fire_truck(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (240, 120))
 
 
+class Camera:
+    # зададим начальный сдвиг камеры
+    def __init__(self, width, height):
+        self.dx = 0
+        self.dy = 0
+        self.width = width
+        self.height = height
+
+    # сдвинуть объект obj на смещение камеры
+    def apply(self, obj):
+        obj.rect.y += self.dy
+
+    # позиционировать камеру на объекте target
+    def update(self, target):
+        self.dy = -(target.rect.y + target.rect.h // 2 - self.height // 2)
+
+
+all_sprites = pygame.sprite.Group()
+tiles_group = pygame.sprite.Group()
+player_group = pygame.sprite.Group()
+
+
 def main():
     pygame.init()
     size = 600, 840
@@ -200,8 +231,8 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
         screen.fill((0, 0, 0))
-
-        board.render(screen)
+        generate_level()
+        all_sprites.draw(screen)
         pygame.display.flip()
     pygame.quit()
 
