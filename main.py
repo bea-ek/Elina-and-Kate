@@ -104,25 +104,18 @@ class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_y):
         super().__init__(tiles_group, all_sprites)
         self.image = load_image(f"{tile_type}.jpg")
-        self.image = pygame.transform.scale(self.image, (120*5, 120))
+        self.image = pygame.transform.scale(self.image, (120 * 5, 120))
         self.rect = self.image.get_rect().move(
-        0, cell_height * pos_y)
-        self.sprites = []
-        if tile_type == 'grass':
-            for i in range(5):
-                if i != 2:
-
-
-
-# class Grass(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super().__init__()
-#         self.image = load_image("grass.jpg")
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#         self.row = [choice((Bush().image, Stone().image, self.image, self.image)),
-#                     choice((Bush().image, Stone().image, self.image, self.image)), self.image,
-#                     choice((Bush().image, Stone().image, self.image, self.image)),
-#                     choice((Bush().image, Stone().image, self.image, self.image))]
+            0, cell_height * pos_y)
+    #     if tile_type == 'grass':
+    #         for cell in range(5):
+    #             if cell != 2:
+    #
+    #
+    # def f(self):
+    #     self.sprites = [Bush(100, 100).image, Stone(200, 100).image, 'none']
+    #     self.rand_sprites = choice(self.sprites)
+    #     return self.rand_sprites
 
 
 class Bush(pygame.sprite.Sprite):
@@ -140,7 +133,7 @@ class Stone(pygame.sprite.Sprite):
         self.image = load_image("stone.jpg")
         self.image.set_colorkey((0, 0, 0))
         self.image = pygame.transform.scale(self.image, (120, 120))
-        self.rect = self.image.get_rect(left=x, top=y)
+        self.rect = self.image.get_rect(left=x, top=120)
 
 
 # class River(pygame.sprite.Sprite):
@@ -162,6 +155,15 @@ class Stone(pygame.sprite.Sprite):
 #         super().__init__()
 #         self.image = load_image("railway.jpg")
 #         self.image = pygame.transform.scale(self.image, (120, 120))
+# class Grass(pygame.sprite.Sprite):
+#     def __init__(self):
+#         super().__init__()
+#         self.image = load_image("grass.jpg")
+#         self.image = pygame.transform.scale(self.image, (120, 120))
+#         self.row = [choice((Bush().image, Stone().image, self.image, self.image)),
+#                     choice((Bush().image, Stone().image, self.image, self.image)), self.image,
+#                     choice((Bush().image, Stone().image, self.image, self.image)),
+#                     choice((Bush().image, Stone().image, self.image, self.image))]
 
 
 # class Player(pygame.sprite.Sprite):
@@ -181,7 +183,6 @@ class Mini_Bus(pygame.sprite.Sprite):
         super().__init__()
         self.image = load_image("mini_bus.png")
         self.image = pygame.transform.scale(self.image, (120, 120))
-
 
 
 class Police_Car(pygame.sprite.Sprite):
