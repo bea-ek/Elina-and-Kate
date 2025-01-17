@@ -1,6 +1,6 @@
 import os
 import sys
-from random import choice, random
+from random import choice
 
 import pygame
 
@@ -107,15 +107,17 @@ class Tile(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (120 * 5, 120))
         self.rect = self.image.get_rect().move(
             0, cell_height * pos_y)
-    #     if tile_type == 'grass':
-    #         for cell in range(5):
-    #             if cell != 2:
-    #
-    #
-    # def f(self):
-    #     self.sprites = [Bush(100, 100).image, Stone(200, 100).image, 'none']
-    #     self.rand_sprites = choice(self.sprites)
-    #     return self.rand_sprites
+        if tile_type == 'grass':
+            for cell in range(5):
+                if cell != 2:
+                    if self.f(cell, pos_y):
+                        all_sprites.append(self.f(cell, pos_y))
+
+    def f(self, cell, pos_y):
+        self.sprites = [Bush(100, 100).image, Stone(200, 100).image, None]
+        self.rand_sprites = choice(self.sprites).get_rect().move(
+            cell * 120, cell_height * pos_y)
+        return self.rand_sprites
 
 
 class Bush(pygame.sprite.Sprite):
