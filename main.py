@@ -1,7 +1,6 @@
 import os
 import sys
 from random import choice
-
 import pygame
 
 FPS = 50
@@ -57,8 +56,6 @@ def generate_level():
     for y, row in enumerate(level[5:-5]):
         if row == '.':
             Tile('grass', y)
-        elif row == '_':
-            Tile('border', y)
         elif row == '=':
             Tile('road', y)
         elif row == '#':
@@ -70,34 +67,12 @@ def generate_level():
     # return Player(2, 10)
 
 
-# class Board:
-#     # создание поля
-#     def __init__(self):
-#         self.width = 5  # Кол-во клеток в ширину
-#         self.height = 7  # в высоту
-#         self.board = [Grass() for _ in range(self.height)]
-#         # Значения положения поля по умолчанию
-#         self.left = 0
-#         self.top = 0
-#         for i in range(4):
-#             cell = choice((Grass(), Grass(), Grass(), River(), Road(), Road(), Railway()))
-#             self.board[i] = cell
-#
-#     # настройка положения поля
-#     def set_view(self, left, top):
-#         self.left = left
-#         self.top = top
-#
-#     # отрисовка
-#     def render(self, screen):
-#         for y in range(self.height):
-#             for x in range(self.width):
-#                 screen.blit(self.board[y].image, (
-#                     x * 120 + self.left, y * 120 + self.top))
-#             if self.board[y].__class__ == Grass:
-#                 for x in range(self.width):
-#                     screen.blit(self.board[y].row[x], (
-#                         x * 120 + self.left, y * 120 + self.top))
+class Board:
+    # создание поля
+    def __init__(self):
+        level = ['.', '.', 'x', 'x', 'x', 'x', 'x', 'x']
+        for i in range(9):
+            level.insert(0, choice(('.', '.', '.', '=', '=', '#', '~')))
 
 
 class Tile(pygame.sprite.Sprite):
@@ -110,14 +85,27 @@ class Tile(pygame.sprite.Sprite):
         if tile_type == 'grass':
             for cell in range(5):
                 if cell != 2:
-                    if self.f(cell, pos_y):
-                        all_sprites.append(self.f(cell, pos_y))
+                    sprite = self.f(cell, pos_y)
+                    if sprite != 'grass':
+                        all_sprites.add(sprite)
 
     def f(self, cell, pos_y):
-        self.sprites = [Bush(100, 100).image, Stone(200, 100).image, None]
-        self.rand_sprites = choice(self.sprites).get_rect().move(
-            cell * 120, cell_height * pos_y)
-        return self.rand_sprites
+        self.sprites = ['stone', 'bush', 'grass']
+        sp = choice(self.sprites)
+        if sp != 'grass':
+            self.sprite = Sprite(sp, cell, pos_y)
+            return self.sprite
+        else:
+            return 'grass'
+
+
+class Sprite(pygame.sprite.Sprite):
+    def __init__(self, sprite_type, pos_x, pos_y):
+        super().__init__(all_sprites)
+        self.image = load_image(f"{sprite_type}.png")
+        self.image.set_colorkey((0, 0, 0))
+        self.image = pygame.transform.scale(self.image, (120, 120))
+        self.rect = self.image.get_rect().move(pos_x * cell_width, pos_y * cell_height)
 
 
 class Bush(pygame.sprite.Sprite):
@@ -126,7 +114,7 @@ class Bush(pygame.sprite.Sprite):
         self.image = load_image("bush.png")
         self.image.set_colorkey((0, 0, 0))
         self.image = pygame.transform.scale(self.image, (120, 120))
-        self.rect = self.image.get_rect(left=x, top=y)
+        self.rect = self.image.get_rect().move(x * cell_width, y * cell_height)
 
 
 class Stone(pygame.sprite.Sprite):
