@@ -10,6 +10,43 @@ dict_of_tiles = {'.': 'grass', '=': 'road', '#': 'railway', '~': 'river', 'x': '
 dict_of_sprites = {'bush': '*', 'stone': '+'}
 replacements = {'.': '..'}
 
+
+def terminate():
+    pygame.quit()
+    sys.exit()
+
+
+def start_screen():
+    pygame.init()
+    screen = pygame.display.set_mode((600, 800))
+    pygame.display.set_caption("Crazy Road)))")
+    clock = pygame.time.Clock()
+    fon = pygame.transform.scale(load_image('rules.jpg'), (600, 840))
+    screen.blit(fon, (0, 0))
+    # screen.blit(pygame.transform.scale(load_image('cat_rules.jpg'), (250,250)), (250,130))
+    # screen.blit(pygame.transform.scale(load_image('start.jpg'), (300, 180)), (100, 400))
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN or \
+                    event.type == pygame.MOUSEBUTTONDOWN:
+                return main()
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def load_image(name):
+    fullname = os.path.join('data', name)
+    # если файл не существует, то выходим
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    return image
+
+
 def render_level(level):
     for y, row in enumerate(level[5:12]):
         row = row[0]
