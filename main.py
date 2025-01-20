@@ -52,16 +52,18 @@ def render_level(level):
         row = row[0]
         if row == '.':
             g = Tile('grass', y)
+            tiles_group.add(g)
             for x in (0, 1, 3, 4):
-                sprite = g.generate_grass(x, y + 5)
+                sprite = g.generate_grass(x, y)
                 if sprite != 'grass':
                     all_sprites.add(sprite)
-                    level[y + 5][x] = dict_of_sprites[sprite.sprite_type]
-            level[y + 5] = [replacements.get(x, x) for x in level[y + 5]]
+                    level[y+5][x] = dict_of_sprites[sprite.sprite_type]
+            level[y+5] = [replacements.get(x, x) for x in level[y+5]]
             print(level)
             print(all_sprites)
         elif row == '=':
-            Tile('road', y)
+            g = Tile('road', y)
+            tiles_group.add(g)
         elif row == '#':
             Tile('railway', y)
         elif row == '~':
@@ -90,8 +92,7 @@ class Tile(pygame.sprite.Sprite):
         super().__init__(tiles_group, all_sprites)
         self.image = load_image(f"{tile_type}.jpg")
         self.image = pygame.transform.scale(self.image, (120 * 5, 120))
-        self.rect = self.image.get_rect().move(
-            0, cell_height * pos_y)
+        self.rect = self.image.get_rect(left=0, top=pos_y * cell_height)
 
     def generate_grass(self, pos_x, pos_y):
         self.sprites = ['stone', 'bush', 'grass']
@@ -108,7 +109,7 @@ class Sprite(pygame.sprite.Sprite):
         self.image = load_image(f"{sprite_type}.png")
         self.image.set_colorkey((0, 0, 0))
         self.image = pygame.transform.scale(self.image, (120, 120))
-        self.rect = self.image.get_rect().move(pos_x * cell_width, pos_y * cell_height)
+        self.rect = self.image.get_rect(left=pos_x * cell_width, top=pos_y * cell_height)
 
 
 # class Bush(pygame.sprite.Sprite):
@@ -159,10 +160,16 @@ class Sprite(pygame.sprite.Sprite):
 #                     choice((Bush().image, Stone().image, self.image, self.image))]
 
 
-# class Player(pygame.sprite.Sprite):
-#     def __init__(self, x, y):
-#         super().__init__(player_group, all_sprites)
-#         self.rect = self.image.get_rect(left=x, top=y)
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(player_group, all_sprites)
+        self.pos_x = 2
+        self.pos_y = 5
+        self.image = load_image(f"cat_demo.jpg")
+        self.image.set_colorkey((255,255,255))
+        self.image = pygame.transform.scale(self.image, (120, 120))
+        self.rect = self.image.get_rect(left=self.pos_x * cell_width, top=self.pos_y * cell_height)
+
 
 class Log(pygame.sprite.Sprite):
     def __init__(self):
@@ -212,7 +219,10 @@ class Camera:
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
+
 board = Board()
+cat = Player()
+player_group.add(cat)
 
 
 def main():
@@ -226,8 +236,11 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
         screen.fill((0, 0, 0))
+
         render_level(board.level)
+        tiles_group.draw(screen)
         all_sprites.draw(screen)
+        player_group.draw(screen)
         pygame.display.flip()
     print(board.level)
     pygame.quit()
