@@ -165,7 +165,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__(player_group, all_sprites)
         self.pos_x = 2
         self.pos_y = 5
-        self.image = load_image(f"cat_demo.jpg")
+        self.image = load_image(f"9.jpg")
         self.image.set_colorkey((255,255,255))
         self.image = pygame.transform.scale(self.image, (120, 120))
         self.rect = self.image.get_rect(left=self.pos_x * cell_width, top=self.pos_y * cell_height)
