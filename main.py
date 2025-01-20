@@ -7,7 +7,7 @@ FPS = 50
 
 cell_width = cell_height = 120
 dict_of_tiles = {'.': 'grass', '=': 'road', '#': 'railway', '~': 'river', 'x': 'border'}  # хз зачем
-dict_of_sprites = {'bush': '*', 'stone': '+'}
+dict_of_sprites = {'bush': '*', 'stone': '+', 'log': '^'}
 replacements = {'.': '..'}
 
 
@@ -23,7 +23,7 @@ def start_screen():
     clock = pygame.time.Clock()
     fon = pygame.transform.scale(load_image('rules.jpg'), (600, 840))
     screen.blit(fon, (0, 0))
-    # screen.blit(pygame.transform.scale(load_image('cat_rules.jpg'), (250,250)), (250,130))
+    screen.blit(pygame.transform.scale(load_image('cat_rules.jpg'), (180, 180)), (300, 200))
     # screen.blit(pygame.transform.scale(load_image('start.jpg'), (300, 180)), (100, 400))
 
     while True:
@@ -57,8 +57,8 @@ def render_level(level):
                 sprite = g.generate_grass(x, y)
                 if sprite != 'grass':
                     all_sprites.add(sprite)
-                    level[y+5][x] = dict_of_sprites[sprite.sprite_type]
-            level[y+5] = [replacements.get(x, x) for x in level[y+5]]
+                    level[y + 5][x] = dict_of_sprites[sprite.sprite_type]
+            level[y + 5] = [replacements.get(x, x) for x in level[y + 5]]
             print(level)
             print(all_sprites)
         elif row == '=':
@@ -67,7 +67,16 @@ def render_level(level):
         elif row == '#':
             Tile('railway', y)
         elif row == '~':
-            Tile('river', y)
+            g = Tile('river', y)
+            tiles_group.add(g)
+            random_x1 = choice([1, 2])
+            random_x2 = choice([4, 3, 0])
+            for x in (random_x1, random_x2):
+                sprite = g.generate_river(x, y)
+                if sprite != 'river':
+                    all_sprites.add(sprite)
+                    level[y + 5][x] = dict_of_sprites[sprite.sprite_type]
+            level[y + 5] = [replacements.get(x, x) for x in level[y + 5]]
         elif row == 'x':
             Tile('border', y)
     # return Player(2, 10)
@@ -101,6 +110,15 @@ class Tile(pygame.sprite.Sprite):
             return Sprite(sp, pos_x, pos_y)
         return 'grass'
 
+    def generate_river(self, pos_x, pos_y):
+        return Sprite('log', pos_x, pos_y)
+
+
+# class Log(pygame.sprite.Sprite):
+#     def __init__(self):
+#         super().__init__()
+#         self.image = load_image("log.png")
+#         self.image = pygame.transform.scale(self.image, (120, 120))
 
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, sprite_type, pos_x, pos_y):
@@ -112,70 +130,15 @@ class Sprite(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(left=pos_x * cell_width, top=pos_y * cell_height)
 
 
-# class Bush(pygame.sprite.Sprite):
-#     def __init__(self, x, y):
-#         super().__init__(all_sprites)
-#         self.image = load_image("bush.png")
-#         self.image.set_colorkey((0, 0, 0))
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#         self.rect = self.image.get_rect().move(x * cell_width, y * cell_height)
-#
-#
-# class Stone(pygame.sprite.Sprite):
-#     def __init__(self, x, y):
-#         super().__init__(all_sprites)
-#         self.image = load_image("stone.png")
-#         self.image.set_colorkey((0, 0, 0))
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#         self.rect = self.image.get_rect(left=x, top=120)
-
-
-# class River(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super().__init__()
-#         self.image = load_image("river2.jpg")  # либо river.jpg
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#
-#
-# class Road(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super().__init__()
-#         self.image = load_image("road.jpg")
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#
-#
-# class Railway(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super().__init__()
-#         self.image = load_image("railway.jpg")
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-# class Grass(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super().__init__()
-#         self.image = load_image("grass.jpg")
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#         self.row = [choice((Bush().image, Stone().image, self.image, self.image)),
-#                     choice((Bush().image, Stone().image, self.image, self.image)), self.image,
-#                     choice((Bush().image, Stone().image, self.image, self.image)),
-#                     choice((Bush().image, Stone().image, self.image, self.image))]
-
-
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(player_group, all_sprites)
         self.pos_x = 2
         self.pos_y = 5
         self.image = load_image(f"9.jpg")
-        self.image.set_colorkey((255,255,255))
+        self.image.set_colorkey((255, 255, 255))
         self.image = pygame.transform.scale(self.image, (120, 120))
         self.rect = self.image.get_rect(left=self.pos_x * cell_width, top=self.pos_y * cell_height)
-
-
-class Log(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = load_image("log.png")
-        self.image = pygame.transform.scale(self.image, (120, 120))
 
 
 class Mini_Bus(pygame.sprite.Sprite):
@@ -248,3 +211,49 @@ def main():
 
 if __name__ == '__main__':
     start_screen()
+# class Bush(pygame.sprite.Sprite):
+#     def __init__(self, x, y):
+#         super().__init__(all_sprites)
+#         self.image = load_image("bush.png")
+#         self.image.set_colorkey((0, 0, 0))
+#         self.image = pygame.transform.scale(self.image, (120, 120))
+#         self.rect = self.image.get_rect().move(x * cell_width, y * cell_height)
+#
+#
+# class Stone(pygame.sprite.Sprite):
+#     def __init__(self, x, y):
+#         super().__init__(all_sprites)
+#         self.image = load_image("stone.png")
+#         self.image.set_colorkey((0, 0, 0))
+#         self.image = pygame.transform.scale(self.image, (120, 120))
+#         self.rect = self.image.get_rect(left=x, top=120)
+
+
+# class River(pygame.sprite.Sprite):
+#     def __init__(self):
+#         super().__init__()
+#         self.image = load_image("river2.jpg")  # либо river.jpg
+#         self.image = pygame.transform.scale(self.image, (120, 120))
+#
+#
+# class Road(pygame.sprite.Sprite):
+#     def __init__(self):
+#         super().__init__()
+#         self.image = load_image("road.jpg")
+#         self.image = pygame.transform.scale(self.image, (120, 120))
+#
+#
+# class Railway(pygame.sprite.Sprite):
+#     def __init__(self):
+#         super().__init__()
+#         self.image = load_image("railway.jpg")
+#         self.image = pygame.transform.scale(self.image, (120, 120))
+# class Grass(pygame.sprite.Sprite):
+#     def __init__(self):
+#         super().__init__()
+#         self.image = load_image("grass.jpg")
+#         self.image = pygame.transform.scale(self.image, (120, 120))
+#         self.row = [choice((Bush().image, Stone().image, self.image, self.image)),
+#                     choice((Bush().image, Stone().image, self.image, self.image)), self.image,
+#                     choice((Bush().image, Stone().image, self.image, self.image)),
+#                     choice((Bush().image, Stone().image, self.image, self.image))]
