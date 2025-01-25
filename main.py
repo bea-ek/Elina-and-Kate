@@ -2,6 +2,7 @@ import os
 import sys
 from random import choice
 import pygame
+import copy
 
 FPS = 50
 
@@ -9,7 +10,7 @@ cell_width = cell_height = 120
 dict_of_tiles = {'.': 'grass', '=': 'road', '#': 'railway', '~': 'river', 'x': 'border'}  # хз зачем
 dict_of_sprites = {'bush': '*', 'stone': '+', 'log': '^'}
 replacements = {'.': '..'}
-
+sp_sprites_move=[]
 
 def terminate():
     pygame.quit()
@@ -77,11 +78,21 @@ def render_level(level):
                     all_sprites.add(sprite)
                     level[y + 5][x] = dict_of_sprites[sprite.sprite_type]
             level[y + 5] = [replacements.get(x, x) for x in level[y + 5]]
+
         elif row == 'x':
             Tile('border', y)
     # return Player(2, 10)
-
-
+# def spr_update(x,g):
+#     speed=10
+#     while True:
+#         pygame.time.delay(30)
+#         for event in pygame.event.get():
+#             if event.type == pygame.QUIT:
+#                 pygame.quit()
+#                 exit()
+#         x += speed
+#         screen.blit(g, (x, y))
+#         pygame.display.update()
 class Board:
     # создание поля
     def __init__(self):
@@ -89,11 +100,26 @@ class Board:
         for i in range(9):
             s = choice(('.', '.', '.', '=', '=', '#', '~'))
             self.level.insert(0, [s for i in range(5)])
-
     def new_row(self):
         for i in range(17):
             self.level[i - 1] = self.level[i]
         self.level[16] = choice(('.', '.', '.', '=', '=', '#', '~'))
+    def re_draw(self):
+        for i in range(len(board.level)):
+            if '~' in board.level[i]:
+                board.level[i] = [board.level[i][-1]] + board.level[i][:-1]
+            if '~' in board.level[i]:
+                g = Tile('river', i)
+                tiles_group.add(g)
+                for j in range(len(board.level[i])):
+                    if board.level[j] == '^':
+                        sprite = g.generate_river(i, j)
+                        if sprite != 'river':
+                            all_sprites.add(sprite)
+                            level[y + 5][x] = dict_of_sprites[sprite.sprite_type]
+
+
+
 
 
 class Tile(pygame.sprite.Sprite):
@@ -102,7 +128,6 @@ class Tile(pygame.sprite.Sprite):
         self.image = load_image(f"{tile_type}.jpg")
         self.image = pygame.transform.scale(self.image, (120 * 5, 120))
         self.rect = self.image.get_rect(left=0, top=pos_y * cell_height)
-
     def generate_grass(self, pos_x, pos_y):
         self.sprites = ['stone', 'bush', 'grass']
         sp = choice(self.sprites)
@@ -182,7 +207,6 @@ class Camera:
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
-
 board = Board()
 cat = Player()
 player_group.add(cat)
@@ -194,18 +218,24 @@ def main():
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption('Инициализация игры')
     running = True
+    k=0
+    render_level(board.level)
+
     while running:
+        k+=1
+        # print(k)
+        if k>1000:
+            board.re_draw()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
         screen.fill((0, 0, 0))
-
-        render_level(board.level)
         tiles_group.draw(screen)
         all_sprites.draw(screen)
         player_group.draw(screen)
         pygame.display.flip()
-    print(board.level)
+
+    # print(board.level)
     pygame.quit()
 
 
