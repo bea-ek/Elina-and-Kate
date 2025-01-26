@@ -8,7 +8,8 @@ FPS = 50
 
 cell_width = cell_height = 120
 dict_of_tiles = {'.': 'grass', '=': 'road', '#': 'railway', '~': 'river', 'x': 'border'}  # хз зачем
-dict_of_sprites = {'bush': '*', 'stone': '+', 'log': '^'}
+dict_of_sprites = {'bush': '*', 'stone': '+', 'log': '^', 'mini_bus': '№1^', 'police_car': '№2', 'fire_truck': '№3',
+                   'train': '@@@'}
 replacements = {'.': '..', '=': '==', '#': '##', '~': '~~', 'x': 'xx'}
 sp_sprites_move = []
 
@@ -26,8 +27,6 @@ def start_screen():
     fon = pygame.transform.scale(load_image('rules.jpg'), (600, 840))
     screen.blit(fon, (0, 0))
     screen.blit(pygame.transform.scale(load_image('cat_rules.jpg'), (180, 180)), (300, 200))
-    # screen.blit(pygame.transform.scale(load_image('start.jpg'), (300, 180)), (100, 400))
-
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -60,13 +59,21 @@ def render_level(level):
                 if sprite != 'grass':
                     all_sprites.add(sprite)
                     level[y][x] = dict_of_sprites[sprite.sprite_type]
-            print(level)
-            print(all_sprites)
+            # print(level)
+            # print(all_sprites)
         elif row == '=':
             g = Tile('road', y)
             tiles_group.add(g)
+            sprite = g.generate_road(0, y)
+            all_sprites.add(sprite)
+            level[y][0] = dict_of_sprites[sprite.sprite_type]
         elif row == '#':
             Tile('railway', y)
+            g = Tile('railway', y)
+            tiles_group.add(g)
+            sprite = g.generate_railway(0, y)
+            all_sprites.add(sprite)
+            level[y][0] = dict_of_sprites[sprite.sprite_type]
         elif row == '~':
             g = Tile('river', y)
             tiles_group.add(g)
@@ -110,7 +117,7 @@ class Board:
 
     def re_draw(self):
         for i in range(len(board.level)):
-            if '~~' in board.level[i]:
+            if '~~' in board.level[i] or '==' in board.level[i]:
                 board.level[i] = [board.level[i][-1]] + board.level[i][:-1]
             # if '~' in board.level[i]:
             #     g = Tile('river', i)
@@ -138,8 +145,16 @@ class Tile(pygame.sprite.Sprite):
             return Sprite(sp, pos_x, pos_y)
         return 'grass'
 
+    def generate_road(self, pos_x, pos_y):
+        self.sprites_cars = ['mini_bus', 'police_car', 'fire_truck']
+        sp = choice(self.sprites_cars)
+        return Sprite(sp, pos_x, pos_y)
+
     def generate_river(self, pos_x, pos_y):
         return Sprite('log', pos_x, pos_y)
+
+    def generate_railway(self, pos_x, pos_y):
+        return Sprite('train', pos_x, pos_y)
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -165,7 +180,7 @@ class Player(pygame.sprite.Sprite):
         #                'up': range(9, 13),
         #                'down': range(1, 5)}
         self.image = load_image("cat/9.png")
-        self.image.set_colorkey((0,0,0))
+        self.image.set_colorkey((0, 0, 0))
         self.image = pygame.transform.scale(self.image, (120, 120))
         self.rect = self.image.get_rect(left=self.pos_x * cell_width, top=self.pos_y * cell_height)
 
@@ -187,7 +202,7 @@ def main():
     pygame.init()
     size = 600, 840
     screen = pygame.display.set_mode(size)
-    pygame.display.set_caption('Инициализация игры')
+    pygame.display.set_caption('Выживание котенка')
     running = True
     render_level(board.level)
     MYEVENTTYPE = pygame.USEREVENT + 1
@@ -208,7 +223,8 @@ def main():
                     cat.rect.x = cat.pos_x * cell_width
                     if cat.pos_x == 5:
                         print('уплыл')
-                        running = False  # Нужно заменить на Gameover
+                        running = False
+                    # Нужно заменить на Gameover
                 print(board.level)
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_UP
                     and board.level[cat.pos_y - 1][cat.pos_x] not in ('xx', '+', '*')):
@@ -263,82 +279,9 @@ def main():
         all_sprites.draw(screen)
         player_group.draw(screen)
         pygame.display.flip()
-
     # print(board.level)
     pygame.quit()
 
 
 if __name__ == '__main__':
     start_screen()
-# class Log(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super().__init__()
-#         self.image = load_image("log.png")
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#
-# class Mini_Bus(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super().__init__()
-#         self.image = load_image("mini_bus.png")
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#
-#
-# class Police_Car(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super().__init__()
-#         self.image = load_image("police_car.png")
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#
-#
-# class Fire_truck(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super().__init__()
-#         self.image = load_image("fire_truck.png")
-#         self.image = pygame.transform.scale(self.image, (240, 120))
-
-# class Bush(pygame.sprite.Sprite):
-#     def __init__(self, x, y):
-#         super().__init__(all_sprites)
-#         self.image = load_image("bush.png")
-#         self.image.set_colorkey((0, 0, 0))
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#         self.rect = self.image.get_rect().move(x * cell_width, y * cell_height)
-#
-#
-# class Stone(pygame.sprite.Sprite):
-#     def __init__(self, x, y):
-#         super().__init__(all_sprites)
-#         self.image = load_image("stone.png")
-#         self.image.set_colorkey((0, 0, 0))
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#         self.rect = self.image.get_rect(left=x, top=120)
-
-
-# class River(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super().__init__()
-#         self.image = load_image("river2.jpg")  # либо river.jpg
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#
-#
-# class Road(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super().__init__()
-#         self.image = load_image("road.jpg")
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#
-#
-# class Railway(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super().__init__()
-#         self.image = load_image("railway.jpg")
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-# class Grass(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super().__init__()
-#         self.image = load_image("grass.jpg")
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#         self.row = [choice((Bush().image, Stone().image, self.image, self.image)),
-#                     choice((Bush().image, Stone().image, self.image, self.image)), self.image,
-#                     choice((Bush().image, Stone().image, self.image, self.image)),
-#                     choice((Bush().image, Stone().image, self.image, self.image))]
