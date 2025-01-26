@@ -110,7 +110,7 @@ class Board:
 
     def re_draw(self):
         for i in range(len(board.level)):
-            if '~' in board.level[i]:
+            if '~~' in board.level[i]:
                 board.level[i] = [board.level[i][-1]] + board.level[i][:-1]
             # if '~' in board.level[i]:
             #     g = Tile('river', i)
@@ -164,7 +164,7 @@ class Player(pygame.sprite.Sprite):
         #                'right': range(5, 9),
         #                'up': range(9, 13),
         #                'down': range(1, 5)}
-        self.image = load_image("9.png")
+        self.image = load_image("cat/9.png")
         self.image.set_colorkey((0,0,0))
         self.image = pygame.transform.scale(self.image, (120, 120))
         self.rect = self.image.get_rect(left=self.pos_x * cell_width, top=self.pos_y * cell_height)
@@ -191,7 +191,7 @@ def main():
     running = True
     render_level(board.level)
     MYEVENTTYPE = pygame.USEREVENT + 1
-    pygame.time.set_timer(MYEVENTTYPE, 2000)
+    pygame.time.set_timer(MYEVENTTYPE, 1000)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -209,6 +209,7 @@ def main():
                     if cat.pos_x == 5:
                         print('уплыл')
                         running = False  # Нужно заменить на Gameover
+                print(board.level)
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_UP
                     and board.level[cat.pos_y - 1][cat.pos_x] not in ('xx', '+', '*')):
                 for obj in all_sprites:
