@@ -80,7 +80,6 @@ def render_level(level):
         elif row == 'x':
             Tile('border', y)
         level[y] = [replacements.get(x, x) for x in level[y]]
-    # return Player(2, 10)
 
 
 # def spr_update(x,g):
@@ -158,6 +157,7 @@ class Sprite(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(player_group)
+        self.on_log = False
         self.pos_x = 2
         self.pos_y = 5
         self.back = 0
@@ -183,20 +183,26 @@ def main():
     running = True
     render_level(board.level)
     MYEVENTTYPE = pygame.USEREVENT + 1
-    pygame.time.set_timer(MYEVENTTYPE, 600)
+    pygame.time.set_timer(MYEVENTTYPE, 2000)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == MYEVENTTYPE:
+                board.re_draw()
                 for sprite in all_sprites:
                     if sprite.sprite_type == 'log':
                         sprite.pos_x += 1
                         sprite.pos_x %= 5
                         sprite.rect.x = sprite.pos_x * cell_width
-                board.re_draw()
-                print(board.level)
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
+                if cat.on_log:
+                    cat.pos_x += 1
+                    cat.rect.x = cat.pos_x * cell_width
+                    if cat.pos_x == 5:
+                        print('уплыл')
+                        running = False  # Нужно заменить на Gameover
+            if (event.type == pygame.KEYDOWN and event.key == pygame.K_UP
+                    and board.level[cat.pos_y - 1][cat.pos_x] not in ('xx', '+', '*')):
                 for obj in all_sprites:
                     obj.pos_y += 1
                     if obj.pos_y > 11:
@@ -208,11 +214,41 @@ def main():
                     if obj.pos_y > 11:
                         tiles_group.remove(obj)
                     obj.rect.y = obj.pos_y * cell_width
-                if cat.back == 0:
+                if cat.pos_y == 5:
                     board.new_row()
                     render_level(board.level)
                 else:
-                    cat.back -= 1
+                    cat.pos_y -= 1
+            if (event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN and
+                    board.level[cat.pos_y + 1][cat.pos_x] not in ('xx', '+', '*')):
+                cat.pos_y += 1
+                if cat.pos_y == 10:
+                    print('орел унес')
+                    running = False  # Нужно заменить на Gameover
+                else:
+                    for obj in all_sprites:
+                        obj.pos_y -= 1
+                        obj.rect.y = obj.pos_y * cell_width
+                    for obj in tiles_group:
+                        obj.pos_y -= 1
+                        obj.rect.y = obj.pos_y * cell_width
+            if (event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT and
+                    board.level[cat.pos_y][cat.pos_x - 1] not in ('xx', '+', '*')):
+                if cat.pos_x > 0:
+                    cat.pos_x -= 1
+                    cat.rect.x -= cell_width
+            if (event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT and
+                    board.level[cat.pos_y][cat.pos_x + 1] not in ('xx', '+', '*')):
+                if cat.pos_x < 4:
+                    cat.pos_x += 1
+                    cat.rect.x += cell_width
+
+            cell = board.level[cat.pos_y][cat.pos_x]
+            if cell == '~~':
+                print('утонул')
+                running = False  # Нужно заменить на Gameover
+            elif cell == '^':
+                cat.on_log = True
         screen.fill((0, 0, 0))
         tiles_group.draw(screen)
         all_sprites.draw(screen)
