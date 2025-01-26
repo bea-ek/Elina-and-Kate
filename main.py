@@ -9,8 +9,9 @@ FPS = 50
 cell_width = cell_height = 120
 dict_of_tiles = {'.': 'grass', '=': 'road', '#': 'railway', '~': 'river', 'x': 'border'}  # хз зачем
 dict_of_sprites = {'bush': '*', 'stone': '+', 'log': '^'}
-replacements = {'.': '..'}
-sp_sprites_move=[]
+replacements = {'.': '..','=': '==', '#': '##', '~': '~~', 'x': 'xx'}
+sp_sprites_move = []
+
 
 def terminate():
     pygame.quit()
@@ -59,7 +60,7 @@ def render_level(level):
                 if sprite != 'grass':
                     all_sprites.add(sprite)
                     level[y + 5][x] = dict_of_sprites[sprite.sprite_type]
-            level[y + 5] = [replacements.get(x, x) for x in level[y + 5]]
+
             print(level)
             print(all_sprites)
         elif row == '=':
@@ -78,10 +79,12 @@ def render_level(level):
                     all_sprites.add(sprite)
                     level[y + 5][x] = dict_of_sprites[sprite.sprite_type]
             level[y + 5] = [replacements.get(x, x) for x in level[y + 5]]
-
         elif row == 'x':
             Tile('border', y)
+        level[y + 5] = [replacements.get(x, x) for x in level[y + 5]]
     # return Player(2, 10)
+
+
 # def spr_update(x,g):
 #     speed=10
 #     while True:
@@ -100,34 +103,34 @@ class Board:
         for i in range(9):
             s = choice(('.', '.', '.', '=', '=', '#', '~'))
             self.level.insert(0, [s for i in range(5)])
+
     def new_row(self):
         for i in range(17):
             self.level[i - 1] = self.level[i]
         self.level[16] = choice(('.', '.', '.', '=', '=', '#', '~'))
+
     def re_draw(self):
         for i in range(len(board.level)):
             if '~' in board.level[i]:
                 board.level[i] = [board.level[i][-1]] + board.level[i][:-1]
-            if '~' in board.level[i]:
-                g = Tile('river', i)
-                tiles_group.add(g)
-                for j in range(len(board.level[i])):
-                    if board.level[j] == '^':
-                        sprite = g.generate_river(i, j)
-                        if sprite != 'river':
-                            all_sprites.add(sprite)
-                            level[y + 5][x] = dict_of_sprites[sprite.sprite_type]
-
-
-
+            # if '~' in board.level[i]:
+            #     g = Tile('river', i)
+            #     tiles_group.add(g)
+            #     for j in range(len(board.level[i])):
+            #         if board.level[j] == '^':
+            #             sprite = g.generate_river(i, j)
+            #             if sprite != 'river':
+            #                 all_sprites.add(sprite)
+            #                 board.level[i][j] = dict_of_sprites[sprite.sprite_type]
 
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_y):
-        super().__init__(tiles_group, all_sprites)
+        super().__init__(tiles_group)
         self.image = load_image(f"{tile_type}.jpg")
         self.image = pygame.transform.scale(self.image, (120 * 5, 120))
         self.rect = self.image.get_rect(left=0, top=pos_y * cell_height)
+
     def generate_grass(self, pos_x, pos_y):
         self.sprites = ['stone', 'bush', 'grass']
         sp = choice(self.sprites)
@@ -149,6 +152,8 @@ class Sprite(pygame.sprite.Sprite):
     def __init__(self, sprite_type, pos_x, pos_y):
         super().__init__(all_sprites)
         self.sprite_type = sprite_type
+        self.pos_x = pos_x
+        self.pos_y = pos_y
         self.image = load_image(f"{sprite_type}.png")
         self.image.set_colorkey((0, 0, 0))
         self.image = pygame.transform.scale(self.image, (120, 120))
@@ -157,7 +162,7 @@ class Sprite(pygame.sprite.Sprite):
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__(player_group, all_sprites)
+        super().__init__(player_group)
         self.pos_x = 2
         self.pos_y = 5
         self.image = load_image(f"9.jpg")
@@ -218,17 +223,23 @@ def main():
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption('Инициализация игры')
     running = True
-    k=0
+    k = 0
     render_level(board.level)
-
+    MYEVENTTYPE = pygame.USEREVENT + 1
+    pygame.time.set_timer(MYEVENTTYPE, 600)
     while running:
-        k+=1
-        # print(k)
-        if k>1000:
-            board.re_draw()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == MYEVENTTYPE:
+                for sprite in all_sprites:
+                    if sprite.sprite_type == 'log':
+                        sprite.pos_x += 1
+                        sprite.pos_x %= 5
+                        sprite.rect = sprite.image.get_rect(left=sprite.pos_x * cell_width,
+                                                            top=sprite.pos_y * cell_height)
+                board.re_draw()
+                print(board.level)
         screen.fill((0, 0, 0))
         tiles_group.draw(screen)
         all_sprites.draw(screen)
