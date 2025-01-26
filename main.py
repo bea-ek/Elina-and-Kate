@@ -160,11 +160,19 @@ class Player(pygame.sprite.Sprite):
         self.on_log = False
         self.pos_x = 2
         self.pos_y = 5
-        self.back = 0
-        self.image = load_image(f"9.jpg")
-        self.image.set_colorkey((255, 255, 255))
+        # self.frames = {'left': range(13, 17),
+        #                'right': range(5, 9),
+        #                'up': range(9, 13),
+        #                'down': range(1, 5)}
+        self.image = load_image("9.png")
+        self.image.set_colorkey((0,0,0))
         self.image = pygame.transform.scale(self.image, (120, 120))
         self.rect = self.image.get_rect(left=self.pos_x * cell_width, top=self.pos_y * cell_height)
+
+    # def animation(self, condition):
+    #     for i in self.frames[condition]:
+    #         self.image = load_image(f'{i}.png')
+    #     self.image = load_image("1.png")
 
 
 all_sprites = pygame.sprite.Group()
