@@ -122,6 +122,9 @@ class Board:
         for i in range(len(board.level)):
             if '~~' in board.level[i] or '==' in board.level[i] or '@@@' in board.level[i]:
                 board.level[i] = [board.level[i][-1]] + board.level[i][:-1]
+            # for el_ind in range(len(board.level[i])):
+            #     if el == '^' or el == '..' or el == '==' or el == '##':
+
 
 
 class Tile(pygame.sprite.Sprite):
@@ -133,7 +136,7 @@ class Tile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(left=0, top=self.pos_y * cell_height)
 
     def generate_grass(self, pos_x, pos_y):
-        self.sprites = ['stone', 'bush', 'grass']
+        self.sprites = ['stone', 'bush', 'grass', 'grass']
         sp = choice(self.sprites)
         if sp != 'grass':
             return Sprite(sp, pos_x, pos_y)
@@ -150,23 +153,32 @@ class Tile(pygame.sprite.Sprite):
     def generate_railway(self, pos_x, pos_y):
         return Sprite('train', pos_x, pos_y)
 
+    def generate_coins(self, pos_x, pos_y):
+        self.sprites_cars = ['coin', 'empty', 'empty']
+        sp = choice(self.sprites_cars)
+        return Sprite(sp, pos_x, pos_y)
+
 
 class Coin(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self):
         super().__init__()
         self.image = load_image('coin_1.png')
-        self.mask = pygame.mask.from_surface(self.image)
-        self.rect = self.image.get_rect(centerx=x + 19, top=y)
         self.frames = [load_image(f'coin_{i}.png') for i in range(1, 9)]
-        self.frame_count = 0
+        self.image = pygame.transform.scale(self.image, (120, 120))
+        # self.rect = self.image.get_rect(left=x*cell_width, top=y * cell_height)
+        self.rect = self.image.get_rect(left=1 * cell_width, top=1 * cell_height)
+        self.frame = 0  # текущий кадр
+        self.last_update = pygame.time.get_ticks()
+        self.frame_rate = 50  # как быстро кадры меняются
 
-    def animation(self):
-        self.frame_count += 1
-        if self.frame_count >= len(self.frames) * animation_frames_coin:
-            self.frame_count = 0
-        self.image = self.frames[self.frame_count // animation_frames_coin]
-    # def coins_pos(self):
-    #
+    def update(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > self.frame_rate:
+            self.last_update = now
+            self.frame += 1
+            if self.frame == len(self.anim):
+                self.frame = 0
+            self.image = self.anim[self.frame]
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -188,7 +200,6 @@ class Eagle(pygame.sprite.Sprite):
         self.image = self.anim[0]
         self.image = pygame.transform.scale(self.image, (120, 120))
         self.rect = self.image.get_rect(left=2 * cell_width - 12, top=0 * cell_height)
-
         self.frame = 0
 
     def update(self):
@@ -219,7 +230,7 @@ class Player(pygame.sprite.Sprite):
         self.frame += 1
         if self.frame == len(self.frames[condition]):
             self.image = load_image("cat/9.png")
-            self.frame=0
+            self.frame = 0
             pass
         self.image = self.frames[condition][self.frame]
 
@@ -237,6 +248,7 @@ player_group = pygame.sprite.Group()
 board = Board()
 cat = Player()
 player_group.add(cat)
+coin = Coin()
 
 
 def main():
@@ -261,7 +273,6 @@ def main():
                 eagle.update()
                 if cat.rect.y > 7 * cell_height:
                     running = False
-
             if event.type == MYEVENTTYPE1:
                 board.re_draw()
                 for sprite in all_sprites:
