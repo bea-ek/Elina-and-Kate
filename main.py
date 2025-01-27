@@ -1,5 +1,6 @@
 import os
 import sys
+from encodings.punycode import selective_find
 from random import choice
 import pygame
 import copy
@@ -65,7 +66,7 @@ def render_level(level):
         elif row == '=':
             g = Tile('road', y)
             tiles_group.add(g)
-            random_x = choice([0,1,2,3,4])
+            random_x = choice([0, 1, 2, 3, 4])
             sprite = g.generate_road(random_x, y)
             all_sprites.add(sprite)
             level[y][random_x] = dict_of_sprites[sprite.sprite_type]
@@ -121,9 +122,6 @@ class Board:
         for i in range(len(board.level)):
             if '~~' in board.level[i] or '==' in board.level[i] or '@@@' in board.level[i]:
                 board.level[i] = [board.level[i][-1]] + board.level[i][:-1]
-
-
-
 
 
 class Tile(pygame.sprite.Sprite):
@@ -182,6 +180,7 @@ class Sprite(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (120, 120))
         self.rect = self.image.get_rect(left=pos_x * cell_width, top=self.pos_y * cell_height)
 
+
 class Eagle(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(player_group)
@@ -206,14 +205,23 @@ class Player(pygame.sprite.Sprite):
         self.pos_x = 2
         self.pos_y = 5
         self.dead = False
-        # self.frames = {'left': range(13, 17),
-        #                'right': range(5, 9),
-        #                'up': range(9, 13),
-        #                'down': range(1, 5)}
+        self.frames = {'left': [pygame.transform.scale(load_image(f"cat/{i}.png"), (120, 120)) for i in range(13, 17)],
+                       'right': [pygame.transform.scale(load_image(f"cat/{i}.png"), (120, 120)) for i in range(5, 9)],
+                       'up': [pygame.transform.scale(load_image(f"cat/{i}.png"), (120, 120)) for i in range(9, 13)],
+                       'down': [pygame.transform.scale(load_image(f"cat/{i}.png"), (120, 120)) for i in range(1, 5)]}
         self.image = load_image("cat/9.png")
+        self.frame = 0
         self.image.set_colorkey((0, 0, 0))
         self.image = pygame.transform.scale(self.image, (120, 120))
         self.rect = self.image.get_rect(left=self.pos_x * cell_width, top=self.pos_y * cell_height)
+
+    def animation(self, condition):
+        self.frame += 1
+        if self.frame == len(self.frames[condition]):
+            self.image = load_image("cat/9.png")
+            self.frame=0
+            pass
+        self.image = self.frames[condition][self.frame]
 
     # def animation(self, condition):
     #     for i in self.frames[condition]:
@@ -257,7 +265,7 @@ def main():
             if event.type == MYEVENTTYPE1:
                 board.re_draw()
                 for sprite in all_sprites:
-                    if sprite.sprite_type in ('log','mini_bus', 'police_car', 'fire_truck','train'):
+                    if sprite.sprite_type in ('log', 'mini_bus', 'police_car', 'fire_truck', 'train'):
                         sprite.pos_x += 1
                         sprite.pos_x %= 5
                         sprite.rect.x = sprite.pos_x * cell_width
@@ -291,6 +299,7 @@ def main():
                         render_level(board.level)
                     else:
                         cat.pos_y -= 1
+                    cat.animation('up')
                 if (event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN and
                         board.level[cat.pos_y + 1][cat.pos_x] not in ('xx', '+', '*')):
                     cat.pos_y += 1
@@ -308,16 +317,19 @@ def main():
                         for obj in tiles_group:
                             obj.pos_y -= 1
                             obj.rect.y = obj.pos_y * cell_width
+                    cat.animation('down')
                 if (event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT and
                         board.level[cat.pos_y][cat.pos_x - 1] not in ('xx', '+', '*')):
                     if cat.pos_x > 0:
                         cat.pos_x -= 1
                         cat.rect.x -= cell_width
+                    cat.animation('left')
                 if (event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT and
                         board.level[cat.pos_y][cat.pos_x + 1] not in ('xx', '+', '*')):
                     if cat.pos_x < 4:
                         cat.pos_x += 1
                         cat.rect.x += cell_width
+                    cat.animation('right')
 
                 cell = board.level[cat.pos_y][cat.pos_x]
                 if cell != '^':
