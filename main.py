@@ -11,7 +11,8 @@ dict_of_tiles = {'.': 'grass', '=': 'road', '#': 'railway', '~': 'river', 'x': '
 dict_of_sprites = {'bush': '*', 'stone': '+', 'log': '^', 'mini_bus': '№1^', 'police_car': '№2', 'fire_truck': '№3',
                    'train': '@@@'}
 replacements = {'.': '..', '=': '==', '#': '##', '~': '~~', 'x': 'xx'}
-sp_sprites_move = []
+coins_count = []
+animation_frames_coin = 10
 
 
 def terminate():
@@ -119,15 +120,8 @@ class Board:
         for i in range(len(board.level)):
             if '~~' in board.level[i] or '==' in board.level[i]:
                 board.level[i] = [board.level[i][-1]] + board.level[i][:-1]
-            # if '~' in board.level[i]:
-            #     g = Tile('river', i)
-            #     tiles_group.add(g)
-            #     for j in range(len(board.level[i])):
-            #         if board.level[j] == '^':
-            #             sprite = g.generate_river(i, j)
-            #             if sprite != 'river':
-            #                 all_sprites.add(sprite)
-            #                 board.level[i][j] = dict_of_sprites[sprite.sprite_type]
+
+
 
 
 class Tile(pygame.sprite.Sprite):
@@ -155,6 +149,24 @@ class Tile(pygame.sprite.Sprite):
 
     def generate_railway(self, pos_x, pos_y):
         return Sprite('train', pos_x, pos_y)
+
+
+class Coin(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = load_image('coin_1.png')
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect = self.image.get_rect(centerx=x + 19, top=y)
+        self.frames = [load_image(f'coin_{i}.png') for i in range(1, 9)]
+        self.frame_count = 0
+
+    def animation(self):
+        self.frame_count += 1
+        if self.frame_count >= len(self.frames) * animation_frames_coin:
+            self.frame_count = 0
+        self.image = self.frames[self.frame_count // animation_frames_coin]
+    # def coins_pos(self):
+    #
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -190,6 +202,8 @@ class Player(pygame.sprite.Sprite):
     #     self.image = load_image("1.png")
 
 
+all_moneys = pygame.sprite.Group()
+count_money = 0
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
