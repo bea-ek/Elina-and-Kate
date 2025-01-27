@@ -65,9 +65,10 @@ def render_level(level):
         elif row == '=':
             g = Tile('road', y)
             tiles_group.add(g)
-            sprite = g.generate_road(0, y)
+            random_x = choice([0,1,2,3,4])
+            sprite = g.generate_road(random_x, y)
             all_sprites.add(sprite)
-            level[y][0] = dict_of_sprites[sprite.sprite_type]
+            level[y][random_x] = dict_of_sprites[sprite.sprite_type]
         elif row == '#':
             Tile('railway', y)
             g = Tile('railway', y)
@@ -118,8 +119,11 @@ class Board:
 
     def re_draw(self):
         for i in range(len(board.level)):
-            if '~~' in board.level[i] or '==' in board.level[i]:
+            if '~~' in board.level[i] or '==' in board.level[i] or '@@@' in board.level[i]:
                 board.level[i] = [board.level[i][-1]] + board.level[i][:-1]
+
+
+
 
 
 class Tile(pygame.sprite.Sprite):
@@ -179,30 +183,12 @@ class Sprite(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(left=pos_x * cell_width, top=self.pos_y * cell_height)
 
 
-class Eagle(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__(player_group)
-        self.anim = [load_image(f'eagle\{i}.png') for i in range(1, 4)]  # загрузка твоих картинок для анимации
-        self.image = self.anim[0]
-        self.image = pygame.transform.scale(self.image, (120, 120))
-        self.rect = self.image.get_rect(left=2 * cell_width - 12, top=0 * cell_height)
-
-        self.frame = 0
-
-    def update(self):
-        self.frame += 1
-        if self.frame == len(self.anim):
-            self.frame = 0
-        self.image = self.anim[self.frame]
-
-
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(player_group)
         self.on_log = False
         self.pos_x = 2
         self.pos_y = 5
-        self.dead = False
         # self.frames = {'left': range(13, 17),
         #                'right': range(5, 9),
         #                'up': range(9, 13),
@@ -235,26 +221,16 @@ def main():
     pygame.display.set_caption('Выживание котенка')
     running = True
     render_level(board.level)
-    MYEVENTTYPE1 = pygame.USEREVENT + 1
-    pygame.time.set_timer(MYEVENTTYPE1, 1000)
-    MYEVENTTYPE2 = pygame.USEREVENT + 2
-    pygame.time.set_timer(MYEVENTTYPE2, 0)
+    MYEVENTTYPE = pygame.USEREVENT + 1
+    pygame.time.set_timer(MYEVENTTYPE, 1000)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == MYEVENTTYPE2:
-                if eagle.rect.y > 4 * cell_height:
-                    cat.rect.y += 0.5 * cell_height
-                eagle.rect.y += 0.5 * cell_height
-                eagle.update()
-                if cat.rect.y > 7 * cell_height:
-                    running = False
-
-            if event.type == MYEVENTTYPE1:
+            if event.type == MYEVENTTYPE:
                 board.re_draw()
                 for sprite in all_sprites:
-                    if sprite.sprite_type in ('log', 'mini_bus', 'police_car', 'fire_truck'):
+                    if sprite.sprite_type in ('log','mini_bus', 'police_car', 'fire_truck','train'):
                         sprite.pos_x += 1
                         sprite.pos_x %= 5
                         sprite.rect.x = sprite.pos_x * cell_width
@@ -269,67 +245,59 @@ def main():
                     running = False
                     # Нужно заменить на Gameover
                 print(board.level)
-            if not cat.dead:
-                if (event.type == pygame.KEYDOWN and event.key == pygame.K_UP
-                        and board.level[cat.pos_y - 1][cat.pos_x] not in ('xx', '+', '*')):
+            if (event.type == pygame.KEYDOWN and event.key == pygame.K_UP
+                    and board.level[cat.pos_y - 1][cat.pos_x] not in ('xx', '+', '*')):
+                for obj in all_sprites:
+                    obj.pos_y += 1
+                    if obj.pos_y > 11:
+                        all_sprites.remove(obj)
+                        tiles_group.remove(obj)
+                    obj.rect.y = obj.pos_y * cell_width
+                for obj in tiles_group:
+                    obj.pos_y += 1
+                    if obj.pos_y > 11:
+                        tiles_group.remove(obj)
+                    obj.rect.y = obj.pos_y * cell_width
+                if cat.pos_y == 5:
+                    board.new_row()
+                    render_level(board.level)
+                else:
+                    cat.pos_y -= 1
+            if (event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN and
+                    board.level[cat.pos_y + 1][cat.pos_x] not in ('xx', '+', '*')):
+                cat.pos_y += 1
+                if cat.pos_y == 10:
+                    print('орел унес')
+                    running = False  # Нужно заменить на Gameover
+                else:
                     for obj in all_sprites:
-                        obj.pos_y += 1
-                        if obj.pos_y > 11:
-                            all_sprites.remove(obj)
-                            tiles_group.remove(obj)
+                        obj.pos_y -= 1
                         obj.rect.y = obj.pos_y * cell_width
                     for obj in tiles_group:
-                        obj.pos_y += 1
-                        if obj.pos_y > 11:
-                            tiles_group.remove(obj)
+                        obj.pos_y -= 1
                         obj.rect.y = obj.pos_y * cell_width
-                    if cat.pos_y == 5:
-                        board.new_row()
-                        render_level(board.level)
-                    else:
-                        cat.pos_y -= 1
-                if (event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN and
-                        board.level[cat.pos_y + 1][cat.pos_x] not in ('xx', '+', '*')):
-                    cat.pos_y += 1
-                    if cat.pos_y == 10:
-                        eagle = Eagle()
-                        player_group.add(eagle)
-                        MYEVENTTYPE2 = pygame.USEREVENT + 2
-                        pygame.time.set_timer(MYEVENTTYPE2, 120)
-                        cat.dead = True
-                        print('орел унес')
-                        # running = False  # Нужно заменить на Gameover
-                    else:
-                        for obj in all_sprites:
-                            obj.pos_y -= 1
-                            obj.rect.y = obj.pos_y * cell_width
-                        for obj in tiles_group:
-                            obj.pos_y -= 1
-                            obj.rect.y = obj.pos_y * cell_width
-                if (event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT and
-                        board.level[cat.pos_y][cat.pos_x - 1] not in ('xx', '+', '*')):
-                    if cat.pos_x > 0:
-                        cat.pos_x -= 1
-                        cat.rect.x -= cell_width
-                if (event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT and
-                        board.level[cat.pos_y][cat.pos_x + 1] not in ('xx', '+', '*')):
-                    if cat.pos_x < 4:
-                        cat.pos_x += 1
-                        cat.rect.x += cell_width
+            if (event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT and
+                    board.level[cat.pos_y][cat.pos_x - 1] not in ('xx', '+', '*')):
+                if cat.pos_x > 0:
+                    cat.pos_x -= 1
+                    cat.rect.x -= cell_width
+            if (event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT and
+                    board.level[cat.pos_y][cat.pos_x + 1] not in ('xx', '+', '*')):
+                if cat.pos_x < 4:
+                    cat.pos_x += 1
+                    cat.rect.x += cell_width
 
-                cell = board.level[cat.pos_y][cat.pos_x]
-                if cell != '^':
-                    cat.on_log = False
-                if cell == '^':
-                    cat.on_log = True
-                if cell == '~~':
-                    cat.dead = True
-                    print('утонул')
-                    running = False  # Нужно заменить на Gameover
-                if cell in ('№1^', '№2', '№3', '@@@'):
-                    cat.dead = True
-                    print('лепешка')
-                    running = False
+            cell = board.level[cat.pos_y][cat.pos_x]
+            if cell != '^':
+                cat.on_log = False
+            if cell == '^':
+                cat.on_log = True
+            if cell == '~~':
+                print('утонул')
+                running = False  # Нужно заменить на Gameover
+            if cell in ('№1^', '№2', '№3', '@@@'):
+                print('лепешка')
+                running = False
         screen.fill((0, 0, 0))
         tiles_group.draw(screen)
         all_sprites.draw(screen)
