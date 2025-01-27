@@ -214,7 +214,7 @@ def main():
             if event.type == MYEVENTTYPE:
                 board.re_draw()
                 for sprite in all_sprites:
-                    if sprite.sprite_type == 'log':
+                    if sprite.sprite_type in ('log','mini_bus', 'police_car', 'fire_truck'):
                         sprite.pos_x += 1
                         sprite.pos_x %= 5
                         sprite.rect.x = sprite.pos_x * cell_width
