@@ -65,9 +65,10 @@ def render_level(level):
         elif row == '=':
             g = Tile('road', y)
             tiles_group.add(g)
-            sprite = g.generate_road(0, y)
+            random_x = choice([0,1,2,3,4])
+            sprite = g.generate_road(random_x, y)
             all_sprites.add(sprite)
-            level[y][0] = dict_of_sprites[sprite.sprite_type]
+            level[y][random_x] = dict_of_sprites[sprite.sprite_type]
         elif row == '#':
             Tile('railway', y)
             g = Tile('railway', y)
