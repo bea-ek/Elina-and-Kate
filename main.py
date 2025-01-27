@@ -124,6 +124,7 @@ class Board:
 
 
 
+
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_y):
         super().__init__(tiles_group)
@@ -238,6 +239,9 @@ def main():
                     if cat.pos_x == 5:
                         print('уплыл')
                         running = False
+                if board.level[5][cat.pos_x] in ('№1^', '№2', '№3', '@@@'):
+                    print('лепешка')
+                    running = False
                     # Нужно заменить на Gameover
                 print(board.level)
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_UP
@@ -283,11 +287,16 @@ def main():
                     cat.rect.x += cell_width
 
             cell = board.level[cat.pos_y][cat.pos_x]
+            if cell != '^':
+                cat.on_log = False
+            if cell == '^':
+                cat.on_log = True
             if cell == '~~':
                 print('утонул')
                 running = False  # Нужно заменить на Gameover
-            elif cell == '^':
-                cat.on_log = True
+            if cell in ('№1^', '№2', '№3', '@@@'):
+                print('лепешка')
+                running = False
         screen.fill((0, 0, 0))
         tiles_group.draw(screen)
         all_sprites.draw(screen)
