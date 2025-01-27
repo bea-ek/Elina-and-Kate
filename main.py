@@ -118,7 +118,7 @@ class Board:
 
     def re_draw(self):
         for i in range(len(board.level)):
-            if '~~' in board.level[i] or '==' in board.level[i]:
+            if '~~' in board.level[i] or '==' in board.level[i] or '@@@' in board.level[i]:
                 board.level[i] = [board.level[i][-1]] + board.level[i][:-1]
 
 
@@ -229,7 +229,7 @@ def main():
             if event.type == MYEVENTTYPE:
                 board.re_draw()
                 for sprite in all_sprites:
-                    if sprite.sprite_type in ('log','mini_bus', 'police_car', 'fire_truck'):
+                    if sprite.sprite_type in ('log','mini_bus', 'police_car', 'fire_truck','train'):
                         sprite.pos_x += 1
                         sprite.pos_x %= 5
                         sprite.rect.x = sprite.pos_x * cell_width
