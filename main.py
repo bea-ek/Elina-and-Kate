@@ -12,8 +12,10 @@ dict_of_tiles = {'.': 'grass', '=': 'road', '#': 'railway', '~': 'river', 'x': '
 dict_of_sprites = {'bush': '*', 'stone': '+', 'log': '^', 'mini_bus': '№1^', 'police_car': '№2', 'fire_truck': '№3',
                    'train': '@@@'}
 replacements = {'.': '..', '=': '==', '#': '##', '~': '~~', 'x': 'xx'}
-coins_count = []
+coins = []
 animation_frames_coin = 10
+count_money = 0
+all_moneys = pygame.sprite.Group()
 
 
 def terminate():
@@ -89,6 +91,7 @@ def render_level(level):
                     level[y][x] = dict_of_sprites[sprite.sprite_type]
         elif row == 'x':
             Tile('border', y)
+
         level[y] = [replacements.get(x, x) for x in level[y]]
 
 
@@ -122,9 +125,20 @@ class Board:
         for i in range(len(board.level)):
             if '~~' in board.level[i] or '==' in board.level[i] or '@@@' in board.level[i]:
                 board.level[i] = [board.level[i][-1]] + board.level[i][:-1]
+            # if '~~' in board.level[i] and '~~' in board.level[i+1] or '~~' in board.level[i] and '~~' in board.level[i-1]:
+            #     board.level[i] = [board.level[i][0]] + board.level[i][0:]
             # for el_ind in range(len(board.level[i])):
             #     if el == '^' or el == '..' or el == '==' or el == '##':
 
+    def coin_pos(self):
+        for i in range(len(board.level)):
+            for j in range(5):
+                if board.level[i][j] == '^' or board.level[i][j] == '..' or board.level[i][j] == '==' or board.level[i][
+                    j] == '##':
+                    spr = choice(['coin', 'empty', 'empty'])
+                    if spr == 'coin':
+                        all_moneys.add((j, i))
+                    pass
 
 
 class Tile(pygame.sprite.Sprite):
@@ -153,11 +167,6 @@ class Tile(pygame.sprite.Sprite):
     def generate_railway(self, pos_x, pos_y):
         return Sprite('train', pos_x, pos_y)
 
-    def generate_coins(self, pos_x, pos_y):
-        self.sprites_cars = ['coin', 'empty', 'empty']
-        sp = choice(self.sprites_cars)
-        return Sprite(sp, pos_x, pos_y)
-
 
 class Coin(pygame.sprite.Sprite):
     def __init__(self):
@@ -171,14 +180,21 @@ class Coin(pygame.sprite.Sprite):
         self.last_update = pygame.time.get_ticks()
         self.frame_rate = 50  # как быстро кадры меняются
 
-    def update(self):
-        now = pygame.time.get_ticks()
-        if now - self.last_update > self.frame_rate:
-            self.last_update = now
-            self.frame += 1
-            if self.frame == len(self.anim):
-                self.frame = 0
-            self.image = self.anim[self.frame]
+    def animation_coins(self):
+        self.frame += 1
+        if self.frame >= len(self.frames) * animation_frames_coin:
+            self.frame = 0
+        self.image = self.frames[self.frame // animation_frames_coin]
+
+    def generate_coins(self):
+        self.sprites_cars = ['coin', 'empty', 'empty']
+        sp = choice(self.sprites_cars)
+        return sp
+
+    def hide(self):  # исчезание монет при контакте с игроком
+        global count_money
+        count_money += 1
+        all_moneys.remove(self)
 
 
 class Sprite(pygame.sprite.Sprite):
