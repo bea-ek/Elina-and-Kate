@@ -3,7 +3,8 @@ import sys
 from encodings.punycode import selective_find
 from random import choice
 import pygame
-import copy
+
+pygame.init()
 
 FPS = 50
 
@@ -15,7 +16,8 @@ replacements = {'.': '..', '=': '==', '#': '##', '~': '~~', 'x': 'xx'}
 coins = []
 animation_frames_coin = 10
 count_money = 0
-all_moneys = pygame.sprite.Group()
+pygame.init()
+pygame.mixer.init()
 
 
 def terminate():
@@ -31,13 +33,19 @@ def start_screen():
     fon = pygame.transform.scale(load_image('rules.jpg'), (600, 840))
     screen.blit(fon, (0, 0))
     screen.blit(pygame.transform.scale(load_image('cat_rules.jpg'), (180, 180)), (300, 200))
+    # pygame.mixer.Channel(0).play(sound_start, loops=-1)
+    pygame.mixer.music.load('data/start_sound.mp3')
+    pygame.mixer.music.play(-1)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
+                if pygame.mixer.music.get_busy():  # Проверяем, играет ли музыка
+                    pygame.mixer.music.stop()
                 return main()
+
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -278,6 +286,8 @@ def main():
     pygame.time.set_timer(MYEVENTTYPE1, 1000)
     MYEVENTTYPE2 = pygame.USEREVENT + 2
     pygame.time.set_timer(MYEVENTTYPE2, 0)
+    pygame.mixer.music.load('data/main_sound.mp3')
+    pygame.mixer.music.play(-1)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -301,10 +311,16 @@ def main():
                     cat.rect.x = cat.pos_x * cell_width
                     if cat.pos_x == 5:
                         print('уплыл')
-                        running = False
+                        if pygame.mixer.music.get_busy():
+                            pygame.mixer.music.stop()
+                            pygame.mixer.music.load('data/water_sound.mp3')
+                            pygame.mixer.music.play(1)
                 if board.level[5][cat.pos_x] in ('№1^', '№2', '№3', '@@@'):
                     print('лепешка')
-                    running = False
+                    if pygame.mixer.music.get_busy():
+                        pygame.mixer.music.stop()
+                        pygame.mixer.music.load('data/die_sound.mp3')
+                        pygame.mixer.music.play(-1)
                     # Нужно заменить на Gameover
                 print(board.level)
             if not cat.dead:
@@ -337,6 +353,10 @@ def main():
                         pygame.time.set_timer(MYEVENTTYPE2, 120)
                         cat.dead = True
                         print('орел унес')
+                        if pygame.mixer.music.get_busy():
+                            pygame.mixer.music.stop()
+                            pygame.mixer.music.load('data/eagle_sound.mp3')
+                            pygame.mixer.music.play(1)
                     else:
                         for obj in all_sprites:
                             obj.pos_y -= 1
@@ -366,11 +386,19 @@ def main():
                 if cell == '~~':
                     cat.dead = True
                     print('утонул')
-                    running = False  # Нужно заменить на Gameover
+                    # Проверяем, играет ли музыка
+                    if pygame.mixer.music.get_busy():
+                        pygame.mixer.music.stop()
+                        pygame.mixer.music.load('data/water_sound.mp3')
+                        pygame.mixer.music.play(1)
+                        # Нужно добавить Gameover
                 if cell in ('№1^', '№2', '№3', '@@@'):
                     cat.dead = True
                     print('лепешка')
-                    running = False
+                    if pygame.mixer.music.get_busy():
+                        pygame.mixer.music.stop()
+                        pygame.mixer.music.load('data/die_sound.mp3')
+                        pygame.mixer.music.play(1)
         screen.fill((0, 0, 0))
         tiles_group.draw(screen)
         all_sprites.draw(screen)
