@@ -48,7 +48,28 @@ def start_screen():
 
         pygame.display.flip()
         clock.tick(FPS)
-
+# def game_over():
+#     pygame.init()
+#     screen = pygame.display.set_mode((600, 800))
+#     pygame.display.set_caption("Crazy Road)))")
+#     clock = pygame.time.Clock()
+#     fon = pygame.transform.scale(load_image('gamerules.jpg'), (600, 840))
+#     screen.blit(fon, (0, 0))
+#     # pygame.mixer.Channel(0).play(sound_start, loops=-1)
+#     pygame.mixer.music.load('data/start_sound.mp3')
+#     pygame.mixer.music.play(-1)
+#     while True:
+#         for event in pygame.event.get():
+#             if event.type == pygame.QUIT:
+#                 terminate()
+#             elif event.type == pygame.KEYDOWN or \
+#                     event.type == pygame.MOUSEBUTTONDOWN:
+#                 if pygame.mixer.music.get_busy():  # Проверяем, играет ли музыка
+#                     pygame.mixer.music.stop()
+#                 return main()
+#
+#         pygame.display.flip()
+#         clock.tick(FPS)
 
 def load_image(name):
     fullname = os.path.join('data', name)
@@ -287,7 +308,7 @@ def main():
     MYEVENTTYPE2 = pygame.USEREVENT + 2
     pygame.time.set_timer(MYEVENTTYPE2, 0)
     pygame.mixer.music.load('data/main_sound.mp3')
-    pygame.mixer.music.play(-1)
+    pygame.mixer.music.play(1)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -320,7 +341,7 @@ def main():
                     if pygame.mixer.music.get_busy():
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load('data/die_sound.mp3')
-                        pygame.mixer.music.play(-1)
+                        pygame.mixer.music.play(1)
                     # Нужно заменить на Gameover
                 print(board.level)
             if not cat.dead:
