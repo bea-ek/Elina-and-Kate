@@ -48,28 +48,28 @@ def start_screen():
 
         pygame.display.flip()
         clock.tick(FPS)
-# def game_over():
-#     pygame.init()
-#     screen = pygame.display.set_mode((600, 800))
-#     pygame.display.set_caption("Crazy Road)))")
-#     clock = pygame.time.Clock()
-#     fon = pygame.transform.scale(load_image('gamerules.jpg'), (600, 840))
-#     screen.blit(fon, (0, 0))
-#     # pygame.mixer.Channel(0).play(sound_start, loops=-1)
-#     pygame.mixer.music.load('data/start_sound.mp3')
-#     pygame.mixer.music.play(-1)
-#     while True:
-#         for event in pygame.event.get():
-#             if event.type == pygame.QUIT:
-#                 terminate()
-#             elif event.type == pygame.KEYDOWN or \
-#                     event.type == pygame.MOUSEBUTTONDOWN:
-#                 if pygame.mixer.music.get_busy():  # Проверяем, играет ли музыка
-#                     pygame.mixer.music.stop()
-#                 return main()
-#
-#         pygame.display.flip()
-#         clock.tick(FPS)
+def game_over():
+    pygame.init()
+    screen = pygame.display.set_mode((750, 750))
+    pygame.display.set_caption("GAME OVEEER!")
+    clock = pygame.time.Clock()
+    fon = pygame.transform.scale(load_image('game_over_screen.jpg'), (750, 750))
+    screen.blit(fon, (0, 0))
+    # pygame.mixer.Channel(0).play(sound_start, loops=-1)
+    pygame.mixer.music.load('data/start_sound.mp3')
+    pygame.mixer.music.play(-1)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN or \
+                    event.type == pygame.MOUSEBUTTONDOWN:
+                if pygame.mixer.music.get_busy():  # Проверяем, играет ли музыка
+                    pygame.mixer.music.stop()
+                return main()
+
+        pygame.display.flip()
+        clock.tick(FPS)
 
 def load_image(name):
     fullname = os.path.join('data', name)
@@ -336,12 +336,14 @@ def main():
                             pygame.mixer.music.stop()
                             pygame.mixer.music.load('data/water_sound.mp3')
                             pygame.mixer.music.play(1)
+                        game_over()
                 if board.level[5][cat.pos_x] in ('№1^', '№2', '№3', '@@@'):
                     print('лепешка')
                     if pygame.mixer.music.get_busy():
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load('data/die_sound.mp3')
                         pygame.mixer.music.play(1)
+                    game_over()
                     # Нужно заменить на Gameover
                 print(board.level)
             if not cat.dead:
@@ -378,6 +380,7 @@ def main():
                             pygame.mixer.music.stop()
                             pygame.mixer.music.load('data/eagle_sound.mp3')
                             pygame.mixer.music.play(1)
+                        game_over()
                     else:
                         for obj in all_sprites:
                             obj.pos_y -= 1
@@ -412,6 +415,7 @@ def main():
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load('data/water_sound.mp3')
                         pygame.mixer.music.play(1)
+                        game_over()
                         # Нужно добавить Gameover
                 if cell in ('№1^', '№2', '№3', '@@@'):
                     cat.dead = True
@@ -420,6 +424,7 @@ def main():
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load('data/die_sound.mp3')
                         pygame.mixer.music.play(1)
+                    game_over()
         screen.fill((0, 0, 0))
         tiles_group.draw(screen)
         all_sprites.draw(screen)
