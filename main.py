@@ -1,8 +1,8 @@
 import os
 import sys
-from encodings.punycode import selective_find
 from random import choice
 import pygame
+from pygame import *
 
 pygame.init()
 
@@ -10,7 +10,7 @@ FPS = 50
 
 cell_width = cell_height = 120
 dict_of_tiles = {'.': 'grass', '=': 'road', '#': 'railway', '~': 'river', 'x': 'border'}  # хз зачем
-dict_of_sprites = {'bush': '*', 'stone': '+', 'log': '^', 'mini_bus': '№1^', 'police_car': '№2', 'fire_truck': '№3',
+dict_of_sprites = {'bush': '*', 'stone': '+', 'log': '^', 'mini_bus': '№1', 'police_car': '№2', 'fire_truck': '№3',
                    'train': '@@@'}
 replacements = {'.': '..', '=': '==', '#': '##', '~': '~~', 'x': 'xx'}
 coins = []
@@ -48,28 +48,55 @@ def start_screen():
 
         pygame.display.flip()
         clock.tick(FPS)
+
+
 def game_over():
     pygame.init()
     screen = pygame.display.set_mode((750, 750))
     pygame.display.set_caption("GAME OVEEER!")
     clock = pygame.time.Clock()
-    fon = pygame.transform.scale(load_image('game_over_screen.jpg'), (750, 750))
+    fon = pygame.transform.scale(load_image('game_over.jpg'), (750, 750))
     screen.blit(fon, (0, 0))
-    # pygame.mixer.Channel(0).play(sound_start, loops=-1)
     pygame.mixer.music.load('data/start_sound.mp3')
     pygame.mixer.music.play(-1)
+    font = pygame.font.Font(None, 32)
+    text = ''
+    rect = pygame.Rect(210, 550, 300, 40)
+    active = False
+    PINK = (255, 189, 228)
+    ACTIVE_PINK = (255, 71, 182)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
-                if pygame.mixer.music.get_busy():  # Проверяем, играет ли музыка
-                    pygame.mixer.music.stop()
-                return main()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if rect.collidepoint(event.pos):
+                    active = not active
+                else:
+                    active = False
+            if event.type == pygame.KEYDOWN:
+                if active:
+                    if event.key == pygame.K_BACKSPACE:
+                        text = text[:-1]  # Удаление символа
+                    elif event.key == pygame.K_RETURN:
+                        print("ник:", text)  # Обработка нажатия Enter
+                        text = ''
+                    elif event.unicode.isprintable():
+                        text += event.unicode
+                elif not active:
+                    if pygame.mixer.music.get_busy():  # Проверяем, играет ли музыка
+                        pygame.mixer.music.stop()
+                        return main()
 
-        pygame.display.flip()
+            current_color = ACTIVE_PINK if active else PINK
+            pygame.draw.rect(screen, current_color, rect, 2)
+            # Рендерим текст ввода
+            text_surface = font.render(text, True, (0, 0, 0))
+            screen.blit(text_surface, (rect.x + 5, rect.y + 5))  # Смещаем текст на 5 пикселей
+            pygame.display.flip()
         clock.tick(FPS)
+
+
 
 def load_image(name):
     fullname = os.path.join('data', name)
@@ -337,7 +364,7 @@ def main():
                             pygame.mixer.music.load('data/water_sound.mp3')
                             pygame.mixer.music.play(1)
                         game_over()
-                if board.level[5][cat.pos_x] in ('№1^', '№2', '№3', '@@@'):
+                if board.level[5][cat.pos_x] in ('№1', '№2', '№3', '@@@'):
                     print('лепешка')
                     if pygame.mixer.music.get_busy():
                         pygame.mixer.music.stop()
@@ -401,7 +428,6 @@ def main():
                         cat.pos_x += 1
                         cat.rect.x += cell_width
                     cat.animation('right')
-
                 cell = board.level[cat.pos_y][cat.pos_x]
                 if cell != '^':
                     cat.on_log = False
@@ -417,7 +443,7 @@ def main():
                         pygame.mixer.music.play(1)
                         game_over()
                         # Нужно добавить Gameover
-                if cell in ('№1^', '№2', '№3', '@@@'):
+                if cell in ('№1', '№2', '№3', '@@@'):
                     cat.dead = True
                     print('лепешка')
                     if pygame.mixer.music.get_busy():
@@ -430,6 +456,7 @@ def main():
         all_sprites.draw(screen)
         player_group.draw(screen)
         pygame.display.flip()
+
     # print(board.level)
     pygame.quit()
 
