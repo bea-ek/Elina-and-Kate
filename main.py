@@ -81,20 +81,24 @@ def game_over():
                     elif event.key == pygame.K_RETURN:
                         print("ник:", text)  # Обработка нажатия Enter
                         text = ''
-                    elif event.unicode.isprintable():
+                    else:
                         text += event.unicode
                 elif not active:
                     if pygame.mixer.music.get_busy():  # Проверяем, играет ли музыка
                         pygame.mixer.music.stop()
-                        return main()
+                        pygame.mixer.music.load('data/start_sound.mp3')
+                        pygame.mixer.music.play(-1)
+                        main()
+
 
             current_color = ACTIVE_PINK if active else PINK
-            pygame.draw.rect(screen, current_color, rect, 2)
             # Рендерим текст ввода
+            pygame.draw.rect(screen, 'white', (210, 550, 300, 40))
             text_surface = font.render(text, True, (0, 0, 0))
             screen.blit(text_surface, (rect.x + 5, rect.y + 5))  # Смещаем текст на 5 пикселей
+            pygame.draw.rect(screen, current_color, rect, 2)
             pygame.display.flip()
-        clock.tick(FPS)
+            clock.tick(FPS)
 
 
 
@@ -370,7 +374,7 @@ def main():
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load('data/die_sound.mp3')
                         pygame.mixer.music.play(1)
-                    game_over()
+
                     # Нужно заменить на Gameover
                 print(board.level)
             if not cat.dead:
@@ -407,7 +411,7 @@ def main():
                             pygame.mixer.music.stop()
                             pygame.mixer.music.load('data/eagle_sound.mp3')
                             pygame.mixer.music.play(1)
-                        game_over()
+
                     else:
                         for obj in all_sprites:
                             obj.pos_y -= 1
@@ -441,7 +445,8 @@ def main():
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load('data/water_sound.mp3')
                         pygame.mixer.music.play(1)
-                        game_over()
+
+
                         # Нужно добавить Gameover
                 if cell in ('№1', '№2', '№3', '@@@'):
                     cat.dead = True
@@ -450,7 +455,9 @@ def main():
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load('data/die_sound.mp3')
                         pygame.mixer.music.play(1)
-                    game_over()
+            else:
+                pygame.time.wait(1000)
+                game_over()
         screen.fill((0, 0, 0))
         tiles_group.draw(screen)
         all_sprites.draw(screen)
