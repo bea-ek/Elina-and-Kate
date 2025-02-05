@@ -1,13 +1,12 @@
 import os
 import sys
+import sqlite3
 from random import choice
 import pygame
 from pygame import *
 
 pygame.init()
-
 FPS = 50
-
 cell_width = cell_height = 120
 dict_of_tiles = {'.': 'grass', '=': 'road', '#': 'railway', '~': 'river', 'x': 'border'}  # хз зачем
 dict_of_sprites = {'coin': '0', 'bush': '*', 'stone': '+', 'log': '^', 'mini_bus': '№1', 'police_car': '№2',
@@ -19,6 +18,15 @@ animation_frames_coin = 10
 count_money = 0
 pygame.init()
 pygame.mixer.init()
+try:
+    con = sqlite3.connect("pygame_cat_db1")
+    cur = con.cursor()
+    cur.execute("SELECT * FROM Results")
+    result = cur.fetchall()
+    print(result)
+
+except sqlite3.Error as e:
+    print(f"Ошибка при работе с базой данных: {e}")
 
 
 def terminate():
@@ -64,7 +72,7 @@ def game_over(death):
     screen.blit(fon, (0, 0))
     pygame.mixer.music.load('data/start_sound.mp3')
     pygame.mixer.music.play(-1)
-    font = pygame.font.Font(None, 32)
+    font = pygame.font.Font(None, 40)
     text = ''
     rect = pygame.Rect(210, 550, 300, 40)
     active = False
@@ -326,7 +334,6 @@ def main():
                 eagle.update()
                 if cat.rect.y > 7 * cell_height:
                     game_over(death)
-
             if event.type == MYEVENTTYPE1:
                 board.re_draw()
                 for sprite in all_sprites:
@@ -336,9 +343,6 @@ def main():
                         sprite.rect.x = sprite.pos_x * cell_width
                     if sprite.sprite_type == 'coin':
                         sprite.animation_coin()
-                        if pygame.mixer.music.get_busy():
-                            pygame.mixer.music.load('data/coin_sound.mp3')
-                            pygame.mixer.music.play(1)
                 if cat.on_log:
                     cat.pos_x += 1
                     cat.rect.x = cat.pos_x * cell_width
