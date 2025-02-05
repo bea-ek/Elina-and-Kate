@@ -10,7 +10,8 @@ FPS = 50
 
 cell_width = cell_height = 120
 dict_of_tiles = {'.': 'grass', '=': 'road', '#': 'railway', '~': 'river', 'x': 'border'}  # хз зачем
-dict_of_sprites = {'bush': '*', 'stone': '+', 'log': '^', 'mini_bus': '№1', 'police_car': '№2', 'fire_truck': '№3',
+dict_of_sprites = {'coin': '0', 'bush': '*', 'stone': '+', 'log': '^', 'mini_bus': '№1', 'police_car': '№2',
+                   'fire_truck': '№3',
                    'train': '@@@'}
 replacements = {'.': '..', '=': '==', '#': '##', '~': '~~', 'x': 'xx'}
 coins = []
@@ -66,6 +67,14 @@ def game_over():
     PINK = (255, 189, 228)
     ACTIVE_PINK = (255, 71, 182)
     while True:
+        current_color = ACTIVE_PINK if active else PINK
+        # Рендерим текст ввода
+        pygame.draw.rect(screen, 'white', (210, 550, 300, 40))
+        text_surface = font.render(text, True, (0, 0, 0))
+        screen.blit(text_surface, (rect.x + 5, rect.y + 5))  # Смещаем текст на 5 пикселей
+        pygame.draw.rect(screen, current_color, rect, 2)
+        pygame.display.flip()
+        clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -88,18 +97,14 @@ def game_over():
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load('data/start_sound.mp3')
                         pygame.mixer.music.play(-1)
+                        global all_sprites, tiles_group, player_group, board, cat
+                        all_sprites = pygame.sprite.Group()
+                        tiles_group = pygame.sprite.Group()
+                        player_group = pygame.sprite.Group()
+                        board = Board()
+                        cat = Player()
+                        player_group.add(cat)
                         main()
-
-
-            current_color = ACTIVE_PINK if active else PINK
-            # Рендерим текст ввода
-            pygame.draw.rect(screen, 'white', (210, 550, 300, 40))
-            text_surface = font.render(text, True, (0, 0, 0))
-            screen.blit(text_surface, (rect.x + 5, rect.y + 5))  # Смещаем текст на 5 пикселей
-            pygame.draw.rect(screen, current_color, rect, 2)
-            pygame.display.flip()
-            clock.tick(FPS)
-
 
 
 def load_image(name):
@@ -123,6 +128,7 @@ def render_level(level):
                 if sprite != 'grass':
                     all_sprites.add(sprite)
                     level[y][x] = dict_of_sprites[sprite.sprite_type]
+
             # print(level)
             # print(all_sprites)
         elif row == '=':
@@ -190,22 +196,21 @@ class Board:
             # for el_ind in range(len(board.level[i])):
             #     if el == '^' or el == '..' or el == '==' or el == '##':
 
-    def coin_pos(self):
-        for i in range(len(board.level)):
-            for j in range(5):
-                if board.level[i][j] == '^' or board.level[i][j] == '..' or board.level[i][j] == '==' or board.level[i][
-                    j] == '##':
-                    spr = choice(['coin', 'empty', 'empty'])
-                    if spr == 'coin':
-                        all_moneys.add((j, i))
-                    pass
+    # def coin_pos(self):
+    #     for i in range(len(board.level)):
+    #         for j in range(5):
+    #             if board.level[i][j] == '^' or board.level[i][j] == '..' or board.level[i][j] == '==' or board.level[i][
+    #                 j] == '##':
+    #                 spr = choice(['coin', 'empty', 'empty'])
+    #                 if spr == 'coin':
+    #                     all_moneys.add((j, i))
+    #                 pass
 
-    def choice_new_row(self,row):
+    def choice_new_row(self, row):
         if '..' in row or '.' in row:
             return choice(('.', '=', '=', '#', '~'))
         elif '=' in row or '~' in row or '#' in row or '==' in row or '~~' in row or '##' in row:
             return '.'
-
 
 
 class Tile(pygame.sprite.Sprite):
@@ -217,7 +222,7 @@ class Tile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(left=0, top=self.pos_y * cell_height)
 
     def generate_grass(self, pos_x, pos_y):
-        self.sprites = ['stone', 'bush', 'grass', 'grass']
+        self.sprites = ['stone', 'bush', 'grass', 'grass', 'grass', 'coin']
         sp = choice(self.sprites)
         if sp != 'grass':
             return Sprite(sp, pos_x, pos_y)
@@ -235,33 +240,33 @@ class Tile(pygame.sprite.Sprite):
         return Sprite('train', pos_x, pos_y)
 
 
-class Coin(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = load_image('coin_1.png')
-        self.frames = [load_image(f'coin_{i}.png') for i in range(1, 9)]
-        self.image = pygame.transform.scale(self.image, (120, 120))
-        # self.rect = self.image.get_rect(left=x*cell_width, top=y * cell_height)
-        self.rect = self.image.get_rect(left=1 * cell_width, top=1 * cell_height)
-        self.frame = 0  # текущий кадр
-        self.last_update = pygame.time.get_ticks()
-        self.frame_rate = 50  # как быстро кадры меняются
-
-    def animation_coins(self):
-        self.frame += 1
-        if self.frame >= len(self.frames) * animation_frames_coin:
-            self.frame = 0
-        self.image = self.frames[self.frame // animation_frames_coin]
-
-    def generate_coins(self):
-        self.sprites_cars = ['coin', 'empty', 'empty']
-        sp = choice(self.sprites_cars)
-        return sp
-
-    def hide(self):  # исчезание монет при контакте с игроком
-        global count_money
-        count_money += 1
-        all_moneys.remove(self)
+# class Coin(pygame.sprite.Sprite):
+#     def __init__(self):
+#         super().__init__()
+#         self.image = load_image('coin_1.png')
+#         self.frames = [load_image(f'coin_{i}.png') for i in range(1, 9)]
+#         self.image = pygame.transform.scale(self.image, (120, 120))
+#         # self.rect = self.image.get_rect(left=x*cell_width, top=y * cell_height)
+#         self.rect = self.image.get_rect(left=1 * cell_width, top=1 * cell_height)
+#         self.frame = 0  # текущий кадр
+#         self.last_update = pygame.time.get_ticks()
+#         self.frame_rate = 50  # как быстро кадры меняются
+#
+#     def animation_coins(self):
+#         self.frame += 1
+#         if self.frame >= len(self.frames) * animation_frames_coin:
+#             self.frame = 0
+#         self.image = self.frames[self.frame // animation_frames_coin]
+#
+#     def generate_coins(self):
+#         self.sprites_cars = ['coin', 'empty', 'empty']
+#         sp = choice(self.sprites_cars)
+#         return sp
+#
+#     def hide(self):  # исчезание монет при контакте с игроком
+#         global count_money
+#         count_money += 1
+#         all_moneys.remove(self)
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -270,10 +275,25 @@ class Sprite(pygame.sprite.Sprite):
         self.sprite_type = sprite_type
         self.pos_x = pos_x
         self.pos_y = pos_y
-        self.image = load_image(f"{sprite_type}.png")
-        self.image.set_colorkey((0, 0, 0))
-        self.image = pygame.transform.scale(self.image, (120, 120))
-        self.rect = self.image.get_rect(left=pos_x * cell_width, top=self.pos_y * cell_height)
+        if sprite_type == 'coin':
+            self.frame = 0
+            self.image = load_image('coin_1.png')
+            self.frames = [load_image(f'coin_{i}.png') for i in range(1, 9)]
+            self.image = pygame.transform.scale(self.image, (70, 70))
+            self.rect = self.image.get_rect(left=self.pos_x * cell_width + 25, top=self.pos_y * cell_height + 25)
+        else:
+            self.image = load_image(f"{sprite_type}.png")
+            self.image.set_colorkey((0, 0, 0))
+            self.image = pygame.transform.scale(self.image, (120, 120))
+            self.rect = self.image.get_rect(left=self.pos_x * cell_width, top=self.pos_y * cell_height)
+
+    def animation_coin(self):
+        self.frame += 1
+        if self.frame >= len(self.frames):
+            self.frame = 0
+        self.image = self.frames[self.frame]
+        self.image = pygame.transform.scale(self.image, (70, 70))
+        self.rect = self.image.get_rect(left=self.pos_x * cell_width + 25, top=self.pos_y * cell_height + 25)
 
 
 class Eagle(pygame.sprite.Sprite):
@@ -295,6 +315,7 @@ class Eagle(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(player_group)
+        self.count_money = 0
         self.on_log = False
         self.pos_x = 2
         self.pos_y = 5
@@ -323,15 +344,12 @@ class Player(pygame.sprite.Sprite):
     #     self.image = load_image("1.png")
 
 
-all_moneys = pygame.sprite.Group()
-count_money = 0
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 board = Board()
 cat = Player()
 player_group.add(cat)
-coin = Coin()
 
 
 def main():
@@ -365,6 +383,8 @@ def main():
                         sprite.pos_x += 1
                         sprite.pos_x %= 5
                         sprite.rect.x = sprite.pos_x * cell_width
+                    if sprite.sprite_type == 'coin':
+                        sprite.animation_coin()
                 if cat.on_log:
                     cat.pos_x += 1
                     cat.rect.x = cat.pos_x * cell_width
@@ -393,6 +413,11 @@ def main():
                             all_sprites.remove(obj)
                             tiles_group.remove(obj)
                         obj.rect.y = obj.pos_y * cell_width
+                        if obj.sprite_type == 'coin':
+                            obj.rect.y += 25
+                            if (obj.pos_x, obj.pos_y) == (cat.pos_x, 5):
+                                obj.kill()
+                                cat.count_money += 1
                     for obj in tiles_group:
                         obj.pos_y += 1
                         if obj.pos_y > 11:
@@ -418,11 +443,15 @@ def main():
                             pygame.mixer.music.stop()
                             pygame.mixer.music.load('data/eagle_sound.mp3')
                             pygame.mixer.music.play(1)
-
                     else:
                         for obj in all_sprites:
                             obj.pos_y -= 1
                             obj.rect.y = obj.pos_y * cell_width
+                            if obj.sprite_type == 'coin':
+                                obj.rect.y += 25
+                                if (obj.pos_x, obj.pos_y) == (cat.pos_x, 5):
+                                    obj.kill()
+                                    cat.count_money += 1
                         for obj in tiles_group:
                             obj.pos_y -= 1
                             obj.rect.y = obj.pos_y * cell_width
@@ -433,12 +462,20 @@ def main():
                         cat.pos_x -= 1
                         cat.rect.x -= cell_width
                     cat.animation('left')
+                    for obj in all_sprites:
+                        if obj.sprite_type == 'coin' and (obj.pos_x, obj.pos_y) == (cat.pos_x, 5):
+                            obj.kill()
+                            cat.count_money += 1
                 if (event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT and
                         board.level[cat.pos_y][cat.pos_x + 1] not in ('xx', '+', '*')):
                     if cat.pos_x < 4:
                         cat.pos_x += 1
                         cat.rect.x += cell_width
                     cat.animation('right')
+                    for obj in all_sprites:
+                        if obj.sprite_type == 'coin' and (obj.pos_x, obj.pos_y) == (cat.pos_x, 5):
+                            obj.kill()
+                            cat.count_money += 1
                 cell = board.level[cat.pos_y][cat.pos_x]
                 if cell != '^':
                     cat.on_log = False
@@ -452,7 +489,6 @@ def main():
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load('data/water_sound.mp3')
                         pygame.mixer.music.play(1)
-
 
                         # Нужно добавить Gameover
                 if cell in ('№1', '№2', '№3', '@@@'):
@@ -470,7 +506,6 @@ def main():
         all_sprites.draw(screen)
         player_group.draw(screen)
         pygame.display.flip()
-
     # print(board.level)
     pygame.quit()
 
