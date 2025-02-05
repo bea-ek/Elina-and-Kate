@@ -172,13 +172,13 @@ class Board:
     def __init__(self):
         self.level = [['.' for i in range(5)] for j in range(2)] + [['x' for i2 in range(5)] for j2 in range(6)]
         for i in range(4):
-            s = choice(('.', '.', '.', '=', '=', '#', '~'))
-            self.level.insert(0, [s for i in range(5)])
+            new = self.choice_new_row(self.level[0])
+            self.level.insert(0, [new for i in range(5)])
 
     def new_row(self):
+        new = self.choice_new_row(self.level[0])
         for i in range(11, 0, -1):
             self.level[i] = self.level[i - 1]
-        new = choice(('.', '.', '.', '=', '=', '#', '~'))
         self.level[0] = [new for i in range(5)]
 
     def re_draw(self):
@@ -199,6 +199,13 @@ class Board:
                     if spr == 'coin':
                         all_moneys.add((j, i))
                     pass
+
+    def choice_new_row(self,row):
+        if '..' in row or '.' in row:
+            return choice(('.', '=', '=', '#', '~'))
+        elif '=' in row or '~' in row or '#' in row or '==' in row or '~~' in row or '##' in row:
+            return '.'
+
 
 
 class Tile(pygame.sprite.Sprite):
