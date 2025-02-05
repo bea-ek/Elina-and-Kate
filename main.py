@@ -161,17 +161,6 @@ def render_level(level):
         level[y] = [replacements.get(x, x) for x in level[y]]
 
 
-# def spr_update(x,g):
-#     speed=10
-#     while True:
-#         pygame.time.delay(30)
-#         for event in pygame.event.get():
-#             if event.type == pygame.QUIT:
-#                 pygame.quit()
-#                 exit()
-#         x += speed
-#         screen.blit(g, (x, y))
-#         pygame.display.update()
 
 class Board:
     # создание поля
@@ -191,20 +180,7 @@ class Board:
         for i in range(len(board.level)):
             if '~~' in board.level[i] or '==' in board.level[i] or '@@@' in board.level[i]:
                 board.level[i] = [board.level[i][-1]] + board.level[i][:-1]
-            # if '~~' in board.level[i] and '~~' in board.level[i+1] or '~~' in board.level[i] and '~~' in board.level[i-1]:
-            #     board.level[i] = [board.level[i][0]] + board.level[i][0:]
-            # for el_ind in range(len(board.level[i])):
-            #     if el == '^' or el == '..' or el == '==' or el == '##':
 
-    # def coin_pos(self):
-    #     for i in range(len(board.level)):
-    #         for j in range(5):
-    #             if board.level[i][j] == '^' or board.level[i][j] == '..' or board.level[i][j] == '==' or board.level[i][
-    #                 j] == '##':
-    #                 spr = choice(['coin', 'empty', 'empty'])
-    #                 if spr == 'coin':
-    #                     all_moneys.add((j, i))
-    #                 pass
 
     def choice_new_row(self, row):
         if '..' in row or '.' in row:
@@ -239,34 +215,6 @@ class Tile(pygame.sprite.Sprite):
     def generate_railway(self, pos_x, pos_y):
         return Sprite('train', pos_x, pos_y)
 
-
-# class Coin(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super().__init__()
-#         self.image = load_image('coin_1.png')
-#         self.frames = [load_image(f'coin_{i}.png') for i in range(1, 9)]
-#         self.image = pygame.transform.scale(self.image, (120, 120))
-#         # self.rect = self.image.get_rect(left=x*cell_width, top=y * cell_height)
-#         self.rect = self.image.get_rect(left=1 * cell_width, top=1 * cell_height)
-#         self.frame = 0  # текущий кадр
-#         self.last_update = pygame.time.get_ticks()
-#         self.frame_rate = 50  # как быстро кадры меняются
-#
-#     def animation_coins(self):
-#         self.frame += 1
-#         if self.frame >= len(self.frames) * animation_frames_coin:
-#             self.frame = 0
-#         self.image = self.frames[self.frame // animation_frames_coin]
-#
-#     def generate_coins(self):
-#         self.sprites_cars = ['coin', 'empty', 'empty']
-#         sp = choice(self.sprites_cars)
-#         return sp
-#
-#     def hide(self):  # исчезание монет при контакте с игроком
-#         global count_money
-#         count_money += 1
-#         all_moneys.remove(self)
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -337,11 +285,6 @@ class Player(pygame.sprite.Sprite):
             self.frame = 0
             pass
         self.image = self.frames[condition][self.frame]
-
-    # def animation(self, condition):
-    #     for i in self.frames[condition]:
-    #         self.image = load_image(f'{i}.png')
-    #     self.image = load_image("1.png")
 
 
 all_sprites = pygame.sprite.Group()
