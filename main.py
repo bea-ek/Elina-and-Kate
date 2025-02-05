@@ -375,7 +375,7 @@ def main():
                 eagle.rect.y += 0.5 * cell_height
                 eagle.update()
                 if cat.rect.y > 7 * cell_height:
-                    running = False
+                    game_over()
             if event.type == MYEVENTTYPE1:
                 board.re_draw()
                 for sprite in all_sprites:
@@ -437,7 +437,6 @@ def main():
                         player_group.add(eagle)
                         MYEVENTTYPE2 = pygame.USEREVENT + 2
                         pygame.time.set_timer(MYEVENTTYPE2, 120)
-                        cat.dead = True
                         print('орел унес')
                         if pygame.mixer.music.get_busy():
                             pygame.mixer.music.stop()
