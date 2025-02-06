@@ -294,7 +294,7 @@ class Sprite(pygame.sprite.Sprite):
         if sprite_type == 'coin':
             self.frame = 0
             self.image = load_image('coin_1.png')
-            self.frames = [load_image(f'coin_{i}.png') for i in range(1, 9)]
+            self.frames = [load_image(f'coin_{i}.png') for i in range(1, 5)]
             self.image = pygame.transform.scale(self.image, (70, 70))
             self.rect = self.image.get_rect(left=self.pos_x * cell_width + 25, top=self.pos_y * cell_height + 25)
         else:
@@ -509,6 +509,8 @@ def main():
                         # Нужно добавить Gameover
                 if cell in ('№1', '№2', '№3', '@@@'):
                     cat.dead = True
+                    cat.image = load_image("лепешка.png")
+                    cat.image = pygame.transform.scale(cat.image, (120, 120))
                     print('лепешка')
                     death = 'Ой, котенок не заметил транспорт...'
                     if pygame.mixer.music.get_busy():
