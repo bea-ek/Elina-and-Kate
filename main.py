@@ -99,9 +99,9 @@ def game_over(death):
     game_over_run = True
     death_text = font.render(death, True, (255, 71, 182))
     death_rect = death_text.get_rect(center=(WIDTH // 2, 250))
-    nick_text = font.render('Cохраните результат под ником (без пробелов), нажав Enter',
+    nick_text = font1.render('Cохраните результат под любым ником (без пробелов)',
                              True, (255, 71, 182))
-    nick_rect = death_text.get_rect(center=(WIDTH // 2, 500))
+    nick_rect = death_text.get_rect(center=(365, 580))
     file_name = "data/result.txt"
 
     with open(file_name, "r", encoding="utf-8") as file:
