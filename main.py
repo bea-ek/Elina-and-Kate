@@ -51,6 +51,32 @@ def start_screen():
         clock.tick(FPS)
 
 
+def sort_results(file_name):  # Сортируем результаты
+    try:
+        with open(file_name, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+        results = []
+        for line in lines:
+            line = line.strip()
+            if line:
+                try:
+                    nick, steps = line.split()
+                    steps = int(steps)
+                    results.append((nick, steps))
+                except ValueError:
+                    print(f"Ошибка в строке: '{line}'")
+                    continue
+        # Сортировка по убыванию шагов
+        results.sort(key=lambda x: x[1], reverse=True)
+        with open(file_name, 'w', encoding='utf-8') as file:
+            for nick, steps in results:
+                file.write(f"{nick} {steps}\n")
+    except FileNotFoundError:
+        print(f"Файл '{file_name}' не найден.")
+    except Exception as e:
+        print(f"ошибка при сортировке файла: {e}")
+
+
 def game_over(death):
     pygame.init()
     global count_steps, count_money
@@ -66,16 +92,36 @@ def game_over(death):
     pygame.mixer.music.load('data/start_sound.mp3')
     pygame.mixer.music.play(-1)
     font = pygame.font.Font(None, 40)
+    font1 = pygame.font.Font(None, 27)
     text = ''
-    rect = pygame.Rect(210, 600, 300, 40)
+    rect = pygame.Rect(210, 600, 300, 35)
     active = False
     game_over_run = True
     death_text = font.render(death, True, (255, 71, 182))
     death_rect = death_text.get_rect(center=(WIDTH // 2, 250))
-    nick_text = font.render('Cохраните результат под ником (без пробелов), нажав Enter',
+    nick_text = font1.render('Cохраните результат под любым ником (без пробелов)',
                              True, (255, 71, 182))
-    nick_rect = death_text.get_rect(center=(WIDTH // 2, 500))
+    nick_rect = death_text.get_rect(center=(365, 580))
     file_name = "data/result.txt"
+
+    with open(file_name, "r", encoding="utf-8") as file:
+        sort_results(file_name)
+        best1 = file.readlines()[0]
+    with open(file_name, "r", encoding="utf-8") as file:
+        sort_results(file_name)
+        best2 = file.readlines()[1]
+    with open(file_name, "r", encoding="utf-8") as file:
+        sort_results(file_name)
+        best3 = file.readlines()[2]
+
+    best1_text = font.render(best1[:-1], True, (255, 71, 182))
+    best1_rect = best1_text.get_rect(center=(WIDTH // 2, 360))
+
+    best2_text = font.render(best2[:-1], True, (255, 71, 182))
+    best2_rect = best2_text.get_rect(center=(WIDTH // 2, 415))
+
+    best3_text = font.render(best3[:-1], True, (255, 71, 182))
+    best3_rect = best3_text.get_rect(center=(WIDTH // 2, 470))
 
     while game_over_run:
         for event in pygame.event.get():
@@ -94,15 +140,9 @@ def game_over(death):
                         try:
                             with open(file_name, "a", encoding="utf-8") as file:
                                 file.write(f"{text} {count_steps}\n")
+                                # sort_results(file_name)
                         except Exception as e:
                             print(f"Ошибка при записи в файл: {e}")
-                        try:
-                            with open(file_name, "r", encoding="utf-8") as file:
-                                file_content = file.read()
-                            print("Содержимое файла:")
-                            print(file_content)
-                        except Exception as e:
-                            print(f"Ошибка при чтении файла: {e}")
                         text = ''
                     else:
                         text += event.unicode
@@ -122,13 +162,15 @@ def game_over(death):
                         cat = Player()
                         player_group.add(cat)
                         main()
-
         # Отрисовка
         screen.blit(fon, (0, 0))
         screen.blit(death_text, death_rect)
         screen.blit(nick_text, nick_rect)
+        screen.blit(best1_text, best1_rect)
+        screen.blit(best2_text, best2_rect)
+        screen.blit(best3_text, best3_rect)
         current_color = ACTIVE_PINK if active else PINK
-        pygame.draw.rect(screen, 'white', (210, 550, 300, 40))
+        pygame.draw.rect(screen, 'white', (210, 600, 200, 40))
         text_surface = font.render(text, True, (0, 0, 0))
         screen.blit(text_surface, (rect.x + 5, rect.y + 5))
         pygame.draw.rect(screen, current_color, rect, 2)
