@@ -8,7 +8,7 @@ from pygame import *
 pygame.init()
 FPS = 50
 cell_width = cell_height = 120
-dict_of_tiles = {'.': 'grass', '=': 'road', '#': 'railway', '~': 'river', 'x': 'border'}  # хз зачем
+dict_of_tiles = {'.': 'grass', '=': 'road', '#': 'railway', '~': 'river', 'x': 'border'}
 dict_of_sprites = {'coin': '0', 'bush': '*', 'stone': '+', 'log': '^', 'mini_bus': '№1', 'police_car': '№2',
                    'fire_truck': '№3',
                    'train': '@@@'}
@@ -72,9 +72,12 @@ def game_over(death):
     game_over_run = True
     death_text = font.render(death, True, (255, 71, 182))
     death_rect = death_text.get_rect(center=(WIDTH // 2, 250))
-    nick_text = font.render('Cохраните результат под ником (без пробелов), нажав Enter',
+    nick_text = font.render('Cохраните результат под ником',
+                            True, (255, 71, 182))
+    nick_rect = death_text.get_rect(center=(WIDTH // 2, 510))
+    nick_text2 = font.render('(Без пробелов), нажав Enter',
                              True, (255, 71, 182))
-    nick_rect = death_text.get_rect(center=(WIDTH // 2, 500))
+    nick_rect2 = death_text.get_rect(center=(WIDTH // 2, 550))
     file_name = "data/result.txt"
 
     while game_over_run:
@@ -127,6 +130,7 @@ def game_over(death):
         screen.blit(fon, (0, 0))
         screen.blit(death_text, death_rect)
         screen.blit(nick_text, nick_rect)
+        screen.blit(nick_text2, nick_rect2)
         current_color = ACTIVE_PINK if active else PINK
         pygame.draw.rect(screen, 'white', (210, 550, 300, 40))
         text_surface = font.render(text, True, (0, 0, 0))
@@ -157,9 +161,6 @@ def render_level(level):
                 if sprite != 'grass':
                     all_sprites.add(sprite)
                     level[y][x] = dict_of_sprites[sprite.sprite_type]
-
-            # print(level)
-            # print(all_sprites)
         elif row == '=':
             g = Tile('road', y)
             tiles_group.add(g)
@@ -186,7 +187,6 @@ def render_level(level):
                     level[y][x] = dict_of_sprites[sprite.sprite_type]
         elif row == 'x':
             Tile('border', y)
-
         level[y] = [replacements.get(x, x) for x in level[y]]
 
 
@@ -294,10 +294,12 @@ class Player(pygame.sprite.Sprite):
         self.pos_x = 2
         self.pos_y = 5
         self.dead = False
-        self.frames = {'left': [pygame.transform.scale(load_image(f"cat/{i}.png"), (120, 120)) for i in range(13, 17)],
-                       'right': [pygame.transform.scale(load_image(f"cat/{i}.png"), (120, 120)) for i in range(5, 9)],
-                       'up': [pygame.transform.scale(load_image(f"cat/{i}.png"), (120, 120)) for i in range(9, 13)],
-                       'down': [pygame.transform.scale(load_image(f"cat/{i}.png"), (120, 120)) for i in range(1, 5)]}
+        self.frames = \
+            {'left': [pygame.transform.scale(load_image(f"cat/{i}.png"), (120, 120)) for i in range(13, 17)],
+             'right': [pygame.transform.scale(load_image(f"cat/{i}.png"), (120, 120)) for i in range(5, 9)],
+             'up': [pygame.transform.scale(load_image(f"cat/{i}.png"), (120, 120)) for i in range(9, 13)],
+             'down': [pygame.transform.scale(load_image(f"cat/{i}.png"), (120, 120)) for i in range(1, 5)],
+             'dead': [pygame.transform.scale(load_image(f"heart/{i}.png"), (60, 60)) for i in range(1, 7)]}
         self.image = load_image("cat/9.png")
         self.frame = 0
         self.image.set_colorkey((0, 0, 0))
@@ -311,6 +313,8 @@ class Player(pygame.sprite.Sprite):
             self.frame = 0
             pass
         self.image = self.frames[condition][self.frame]
+        if condition == 'dead':
+            cat.rect.x = cat.pos_x * cell_width + 30
 
 
 all_sprites = pygame.sprite.Group()
@@ -333,6 +337,8 @@ def main():
     pygame.time.set_timer(MYEVENTTYPE1, 1000)
     MYEVENTTYPE2 = pygame.USEREVENT + 2
     pygame.time.set_timer(MYEVENTTYPE2, 0)
+    MYEVENTTYPE3 = pygame.USEREVENT + 3
+    pygame.time.set_timer(MYEVENTTYPE3, 0)
     pygame.mixer.music.load('data/main_sound.mp3')
     pygame.mixer.music.play(-1)
     while running:
@@ -340,11 +346,24 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == MYEVENTTYPE2:
+                eagle.rect.x = cat.rect.x
                 if eagle.rect.y > 4 * cell_height:
                     cat.rect.y += 0.5 * cell_height
                 eagle.rect.y += 0.5 * cell_height
                 eagle.update()
                 if cat.rect.y > 7 * cell_height:
+                    game_over(death)
+            if event.type == MYEVENTTYPE3:
+                cat.dead=True
+                cat.animation('dead')
+                if cat.frame == 5:
+                    pygame.time.wait(500)
+                    cat.dead = True
+                    death = 'Ой, котенок не заметил транспорт...'
+                    if pygame.mixer.music.get_busy():
+                        pygame.mixer.music.stop()
+                        pygame.mixer.music.load('data/die_sound.mp3')
+                        pygame.mixer.music.play(1)
                     game_over(death)
             if event.type == MYEVENTTYPE1:
                 board.re_draw()
@@ -409,7 +428,6 @@ def main():
                     if cat.pos_y == 10:
                         eagle = Eagle()
                         player_group.add(eagle)
-                        MYEVENTTYPE2 = pygame.USEREVENT + 2
                         pygame.time.set_timer(MYEVENTTYPE2, 120)
                         print('орел унес')
                         death = 'Котенка забрал орел...'
@@ -430,21 +448,19 @@ def main():
                             obj.pos_y -= 1
                             obj.rect.y = obj.pos_y * cell_width
                     cat.animation('down')
-                if (event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT and
+                if (event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT and cat.pos_x > 0 and
                         board.level[cat.pos_y][cat.pos_x - 1] not in ('xx', '+', '*')):
-                    if cat.pos_x > 0:
-                        cat.pos_x -= 1
-                        cat.rect.x -= cell_width
+                    cat.pos_x -= 1
+                    cat.rect.x -= cell_width
                     cat.animation('left')
                     for obj in all_sprites:
                         if obj.sprite_type == 'coin' and (obj.pos_x, obj.pos_y) == (cat.pos_x, 5):
                             obj.kill()
                             cat.count_money += 1
-                if (event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT and
+                if (event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT and cat.pos_x < 4 and
                         board.level[cat.pos_y][cat.pos_x + 1] not in ('xx', '+', '*')):
-                    if cat.pos_x < 4:
-                        cat.pos_x += 1
-                        cat.rect.x += cell_width
+                    cat.pos_x += 1
+                    cat.rect.x += cell_width
                     cat.animation('right')
                     for obj in all_sprites:
                         if obj.sprite_type == 'coin' and (obj.pos_x, obj.pos_y) == (cat.pos_x, 5):
@@ -466,18 +482,8 @@ def main():
                         pygame.mixer.music.play(1)
                         # Нужно добавить Gameover
                 if cell in ('№1', '№2', '№3', '@@@'):
-                    cat.dead = True
-                    cat.image = load_image("лепешка.png")
-                    cat.image = pygame.transform.scale(cat.image, (120, 120))
+                    pygame.time.set_timer(MYEVENTTYPE3, 120)
                     print('лепешка')
-                    death = 'Ой, котенок не заметил транспорт...'
-                    if pygame.mixer.music.get_busy():
-                        pygame.mixer.music.stop()
-                        pygame.mixer.music.load('data/die_sound.mp3')
-                        pygame.mixer.music.play(1)
-            else:
-                pygame.time.wait(1000)
-                game_over(death)
 
         screen.fill((0, 0, 0))
         tiles_group.draw(screen)
