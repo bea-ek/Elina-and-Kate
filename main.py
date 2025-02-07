@@ -1,11 +1,8 @@
 import os
 import sys
-import sqlite3
 from random import choice
 import pygame
-from pygame import *
 
-pygame.init()
 FPS = 50
 cell_width = cell_height = 120
 dict_of_tiles = {'.': 'grass', '=': 'road', '#': 'railway', '~': 'river', 'x': 'border'}
@@ -13,8 +10,6 @@ dict_of_sprites = {'coin': '0', 'bush': '*', 'stone': '+', 'log': '^', 'mini_bus
                    'fire_truck': '№3',
                    'train': '@@@'}
 replacements = {'.': '..', '=': '==', '#': '##', '~': '~~', 'x': 'xx'}
-coins = []
-animation_frames_coin = 10
 count_money = 0
 count_steps = 0
 pygame.init()
@@ -73,12 +68,14 @@ def sort_results(file_name):  # Сортируем результаты
                 file.write(f"{nick} {steps}\n")
     except FileNotFoundError:
         print(f"Файл '{file_name}' не найден.")
+        print(f"Файл '{file_name}' не найден.")
     except Exception as e:
         print(f"ошибка при сортировке файла: {e}")
 
 
 def game_over(death):
     pygame.init()
+    pygame.mixer.init()
     global count_steps, count_money
     WIDTH, HEIGHT = 750, 750
     FPS = 30
@@ -155,17 +152,21 @@ def game_over(death):
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load('data/start_sound.mp3')
                         pygame.mixer.music.play(-1)
-                        global all_sprites, tiles_group, player_group, board, cat
-                        count_steps = 0
-                        count_money = 0
-                        all_sprites = pygame.sprite.Group()
-                        tiles_group = pygame.sprite.Group()
-                        player_group = pygame.sprite.Group()
-                        board = Board()
-                        cat = Player()
-                        player_group.add(cat)
-                        main()
-        # Отрисовка
+                    global all_sprites, tiles_group, player_group, board, cat
+                    count_steps = 0
+                    count_money = 0
+                    all_sprites = pygame.sprite.Group()
+                    tiles_group = pygame.sprite.Group()
+                    player_group = pygame.sprite.Group()
+                    board = Board()
+                    cat = Player()
+                    cat.image = load_image("cat/9.png")
+
+                    player_group.add(cat)
+                    main()
+                    k=1
+                    print(cat.dead)
+
         screen.blit(fon, (0, 0))
         screen.blit(death_text, death_rect)
         screen.blit(nick_text, nick_rect)
@@ -180,6 +181,7 @@ def game_over(death):
         pygame.draw.rect(screen, current_color, rect, 2)
         pygame.display.flip()
         clock.tick(FPS)
+        # Отрисовка
 
 
 def load_image(name):
@@ -331,7 +333,6 @@ class Eagle(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(player_group)
-        self.count_money = 0
         self.on_log = False
         self.pos_x = 2
         self.pos_y = 5
@@ -368,6 +369,12 @@ player_group.add(cat)
 
 
 def main():
+    k=1
+    cat.dead=False
+    cat.pos_x = 2
+    cat.pos_y = 5
+    cat.rect = cat.image.get_rect(left=cat.pos_x * cell_width, top=cat.pos_y * cell_height)
+    cat.animation('up')
     pygame.init()
     size = 600, 840
     global count_steps, count_money
@@ -381,6 +388,8 @@ def main():
     pygame.time.set_timer(MYEVENTTYPE2, 0)
     MYEVENTTYPE3 = pygame.USEREVENT + 3
     pygame.time.set_timer(MYEVENTTYPE3, 0)
+    MYEVENTTYPE4 = pygame.USEREVENT + 4
+    pygame.time.set_timer(MYEVENTTYPE4, 0)
     pygame.mixer.music.load('data/main_sound.mp3')
     pygame.mixer.music.play(-1)
     font = pygame.font.Font(None, 40)
@@ -399,9 +408,9 @@ def main():
                 if cat.rect.y > 7 * cell_height:
                     game_over(death)
             if event.type == MYEVENTTYPE3:
-                cat.dead = True
                 cat.animation('dead')
                 if cat.frame == 5:
+                    cat.frame = 0
                     pygame.time.wait(500)
                     cat.dead = True
                     death = 'Ой, котенок не заметил транспорт...'
@@ -410,6 +419,18 @@ def main():
                         pygame.mixer.music.load('data/die_sound.mp3')
                         pygame.mixer.music.play(1)
                     game_over(death)
+                cat.dead = False
+            if event.type == MYEVENTTYPE4:
+                cat.animation('dead')
+                if cat.frame == 5:
+                    pygame.time.wait(500)
+                    death = 'Котенок не попал на бревнышко...'
+                    if pygame.mixer.music.get_busy():
+                        pygame.mixer.music.stop()
+                        pygame.mixer.music.load('data/water_sound.mp3')
+                        pygame.mixer.music.play(1)
+                    game_over(death)
+                cat.dead = False
             if event.type == MYEVENTTYPE1:
                 board.re_draw()
                 for sprite in all_sprites:
@@ -422,24 +443,7 @@ def main():
                 if cat.on_log:
                     cat.pos_x += 1
                     cat.rect.x = cat.pos_x * cell_width
-                    if cat.pos_x == 5:
-                        print('уплыл')
-                        death = 'Котенок задумался и уплыл...'
-                        if pygame.mixer.music.get_busy():
-                            pygame.mixer.music.stop()
-                            pygame.mixer.music.load('data/water_sound.mp3')
-                            pygame.mixer.music.play(1)
-                        game_over(death)
-                if board.level[5][cat.pos_x] in ('№1', '№2', '№3', '@@@'):
-                    print('лепешка')
-                    death = 'Ой, котенок не заметил транспорт...'
-                    if pygame.mixer.music.get_busy():
-                        pygame.mixer.music.stop()
-                        pygame.mixer.music.load('data/die_sound.mp3')
-                        pygame.mixer.music.play(1)
 
-                    # Нужно заменить на Gameover
-                print(board.level)
             if not cat.dead:
                 if (event.type == pygame.KEYDOWN and event.key == pygame.K_UP
                         and board.level[cat.pos_y - 1][cat.pos_x] not in ('xx', '+', '*')):
@@ -454,7 +458,7 @@ def main():
                             obj.rect.y += 25
                             if (obj.pos_x, obj.pos_y) == (cat.pos_x, 5):
                                 obj.kill()
-                                cat.count_money += 1
+                                count_money += 1
                     for obj in tiles_group:
                         obj.pos_y += 1
                         if obj.pos_y > 11:
@@ -488,7 +492,7 @@ def main():
                                 obj.rect.y += 25
                                 if (obj.pos_x, obj.pos_y) == (cat.pos_x, 5):
                                     obj.kill()
-                                    cat.count_money += 1
+                                    count_money += 1
                         for obj in tiles_group:
                             obj.pos_y -= 1
                             obj.rect.y = obj.pos_y * cell_width
@@ -501,7 +505,7 @@ def main():
                     for obj in all_sprites:
                         if obj.sprite_type == 'coin' and (obj.pos_x, obj.pos_y) == (cat.pos_x, 5):
                             obj.kill()
-                            cat.count_money += 1
+                            count_money += 1
                 if (event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT and cat.pos_x < 4 and
                         board.level[cat.pos_y][cat.pos_x + 1] not in ('xx', '+', '*')):
                     cat.pos_x += 1
@@ -510,25 +514,18 @@ def main():
                     for obj in all_sprites:
                         if obj.sprite_type == 'coin' and (obj.pos_x, obj.pos_y) == (cat.pos_x, 5):
                             obj.kill()
-                            cat.count_money += 1
+                            count_money += 1
                 cell = board.level[cat.pos_y][cat.pos_x]
                 if cell != '^':
                     cat.on_log = False
                 if cell == '^':
                     cat.on_log = True
                 if cell == '~~':
+                    pygame.time.set_timer(MYEVENTTYPE4, 120)
                     cat.dead = True
-                    print('утонул')
-                    death = 'Котенок не попал на бревнышко...'
-                    # Проверяем, играет ли музыка
-                    if pygame.mixer.music.get_busy():
-                        pygame.mixer.music.stop()
-                        pygame.mixer.music.load('data/water_sound.mp3')
-                        pygame.mixer.music.play(1)
-                        # Нужно добавить Gameover
                 if cell in ('№1', '№2', '№3', '@@@'):
-                    pygame.time.set_timer(MYEVENTTYPE3, 120)
-                    print('лепешка')
+                    pygame.time.set_timer(MYEVENTTYPE3, 150)
+                    cat.dead = True
 
         screen.fill((0, 0, 0))
         # screen.blit(hello_text, hello_rect)
