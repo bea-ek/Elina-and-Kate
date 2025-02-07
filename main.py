@@ -100,7 +100,7 @@ def game_over(death):
     death_text = font.render(death, True, (255, 71, 182))
     death_rect = death_text.get_rect(center=(WIDTH // 2, 250))
     nick_text = font1.render('Cохраните результат под любым ником (без пробелов)',
-                             True, (255, 71, 182))
+                             True, (255, 189, 228))
     nick_rect = death_text.get_rect(center=(365, 580))
     file_name = "data/result.txt"
 
@@ -113,6 +113,9 @@ def game_over(death):
     with open(file_name, "r", encoding="utf-8") as file:
         sort_results(file_name)
         best3 = file.readlines()[2]
+    cur_text = font.render(f'Ваш результат: шаги:{count_steps} монетки:{count_money}',
+                           True, (255, 71, 182))
+    cur_rect = death_text.get_rect(center=(365, 530))
 
     best1_text = font.render(best1[:-1], True, (255, 71, 182))
     best1_rect = best1_text.get_rect(center=(WIDTH // 2, 360))
@@ -167,6 +170,7 @@ def game_over(death):
         screen.blit(death_text, death_rect)
         screen.blit(nick_text, nick_rect)
         screen.blit(best1_text, best1_rect)
+        screen.blit(cur_text, cur_rect)
         screen.blit(best2_text, best2_rect)
         screen.blit(best3_text, best3_rect)
         current_color = ACTIVE_PINK if active else PINK
@@ -366,7 +370,7 @@ player_group.add(cat)
 def main():
     pygame.init()
     size = 600, 840
-    global count_steps
+    global count_steps, count_money
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption('Выживание котенка')
     running = True
@@ -379,6 +383,9 @@ def main():
     pygame.time.set_timer(MYEVENTTYPE3, 0)
     pygame.mixer.music.load('data/main_sound.mp3')
     pygame.mixer.music.play(-1)
+    font = pygame.font.Font(None, 40)
+    # hello_text = font.render("7o78", True, (255, 255, 255))
+    # hello_rect = hello_text.get_rect(center=(300, 200))
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -392,7 +399,7 @@ def main():
                 if cat.rect.y > 7 * cell_height:
                     game_over(death)
             if event.type == MYEVENTTYPE3:
-                cat.dead=True
+                cat.dead = True
                 cat.animation('dead')
                 if cat.frame == 5:
                     pygame.time.wait(500)
@@ -524,6 +531,7 @@ def main():
                     print('лепешка')
 
         screen.fill((0, 0, 0))
+        # screen.blit(hello_text, hello_rect)
         tiles_group.draw(screen)
         all_sprites.draw(screen)
         player_group.draw(screen)
