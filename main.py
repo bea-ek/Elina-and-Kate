@@ -12,6 +12,7 @@ dict_of_sprites = {'coin': '0', 'bush': '*', 'stone': '+', 'log': '^', 'mini_bus
 replacements = {'.': '..', '=': '==', '#': '##', '~': '~~', 'x': 'xx'}
 count_money = 0
 count_steps = 0
+#для музыки
 pygame.init()
 pygame.mixer.init()
 
@@ -98,21 +99,26 @@ def game_over(death):
     death_rect = death_text.get_rect(center=(WIDTH // 2, 250))
     nick_text = font1.render('Cохраните результат под любым ником (без пробелов)',
                              True, (255, 189, 228))
-    nick_rect = death_text.get_rect(center=(365, 580))
+    nick_rect = death_text.get_rect(left=130, top=550)
     file_name = "data/result.txt"
 
     with open(file_name, "r", encoding="utf-8") as file:
         sort_results(file_name)
-        best1 = file.readlines()[0]
+        best1 = file.readlines()[1]
     with open(file_name, "r", encoding="utf-8") as file:
         sort_results(file_name)
         best2 = file.readlines()[1]
     with open(file_name, "r", encoding="utf-8") as file:
         sort_results(file_name)
+        best2 = file.readlines()[1]
+
+    with open(file_name, "r", encoding="utf-8") as file:
+        sort_results(file_name)
         best3 = file.readlines()[2]
-    cur_text = font.render(f'Ваш результат: шаги:{count_steps} монетки:{count_money}',
-                           True, (255, 71, 182))
-    cur_rect = death_text.get_rect(center=(365, 530))
+
+    cur_text = font1.render(f'Ваш результат: шаги:{count_steps} монетки:{count_money}',
+                            True, (255, 71, 182))
+    cur_rect = death_text.get_rect(left=130, top=520)
 
     best1_text = font.render(best1[:-1], True, (255, 71, 182))
     best1_rect = best1_text.get_rect(center=(WIDTH // 2, 360))
@@ -134,8 +140,10 @@ def game_over(death):
                     active = False
             if event.type == pygame.KEYDOWN:
                 if active:
+                    #стераем текст
                     if event.key == pygame.K_BACKSPACE:
                         text = text[:-1]
+                    # действия при нажатии Enter
                     elif event.key == pygame.K_RETURN:
                         try:
                             with open(file_name, "a", encoding="utf-8") as file:
@@ -161,10 +169,11 @@ def game_over(death):
                     board = Board()
                     cat = Player()
                     cat.image = load_image("cat/9.png")
-
+                    eagle = Eagle()
+                    eagle.rect.x = -cell_height
                     player_group.add(cat)
                     main()
-                    k=1
+                    k = 1
                     print(cat.dead)
 
         screen.blit(fon, (0, 0))
@@ -369,8 +378,8 @@ player_group.add(cat)
 
 
 def main():
-    k=1
-    cat.dead=False
+    k = 1
+    cat.dead = False
     cat.pos_x = 2
     cat.pos_y = 5
     cat.rect = cat.image.get_rect(left=cat.pos_x * cell_width, top=cat.pos_y * cell_height)
@@ -392,9 +401,6 @@ def main():
     pygame.time.set_timer(MYEVENTTYPE4, 0)
     pygame.mixer.music.load('data/main_sound.mp3')
     pygame.mixer.music.play(-1)
-    font = pygame.font.Font(None, 40)
-    # hello_text = font.render("7o78", True, (255, 255, 255))
-    # hello_rect = hello_text.get_rect(center=(300, 200))
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -414,10 +420,7 @@ def main():
                     pygame.time.wait(500)
                     cat.dead = True
                     death = 'Ой, котенок не заметил транспорт...'
-                    if pygame.mixer.music.get_busy():
-                        pygame.mixer.music.stop()
-                        pygame.mixer.music.load('data/die_sound.mp3')
-                        pygame.mixer.music.play(1)
+
                     game_over(death)
                 cat.dead = False
             if event.type == MYEVENTTYPE4:
@@ -425,10 +428,7 @@ def main():
                 if cat.frame == 5:
                     pygame.time.wait(500)
                     death = 'Котенок не попал на бревнышко...'
-                    if pygame.mixer.music.get_busy():
-                        pygame.mixer.music.stop()
-                        pygame.mixer.music.load('data/water_sound.mp3')
-                        pygame.mixer.music.play(1)
+
                     game_over(death)
                 cat.dead = False
             if event.type == MYEVENTTYPE1:
@@ -441,6 +441,9 @@ def main():
                     if sprite.sprite_type == 'coin':
                         sprite.animation_coin()
                 if cat.on_log:
+                    if cat.pos_x == 4:
+                        death = 'Котенок уплыл...'
+                        game_over(death)
                     cat.pos_x += 1
                     cat.rect.x = cat.pos_x * cell_width
 
@@ -459,6 +462,7 @@ def main():
                             if (obj.pos_x, obj.pos_y) == (cat.pos_x, 5):
                                 obj.kill()
                                 count_money += 1
+
                     for obj in tiles_group:
                         obj.pos_y += 1
                         if obj.pos_y > 11:
@@ -515,6 +519,7 @@ def main():
                         if obj.sprite_type == 'coin' and (obj.pos_x, obj.pos_y) == (cat.pos_x, 5):
                             obj.kill()
                             count_money += 1
+
                 cell = board.level[cat.pos_y][cat.pos_x]
                 if cell != '^':
                     cat.on_log = False
@@ -523,17 +528,25 @@ def main():
                 if cell == '~~':
                     pygame.time.set_timer(MYEVENTTYPE4, 120)
                     cat.dead = True
+                    if pygame.mixer.music.get_busy():
+                        pygame.mixer.music.stop()
+                        pygame.mixer.music.load('data/water_sound.mp3')
+                        pygame.mixer.music.play(1)
                 if cell in ('№1', '№2', '№3', '@@@'):
+                    if pygame.mixer.music.get_busy():
+                        pygame.mixer.music.stop()
+                        pygame.mixer.music.load('data/die_sound.mp3')
+                        pygame.mixer.music.play(1)
                     pygame.time.set_timer(MYEVENTTYPE3, 150)
                     cat.dead = True
 
         screen.fill((0, 0, 0))
-        # screen.blit(hello_text, hello_rect)
+
         tiles_group.draw(screen)
         all_sprites.draw(screen)
         player_group.draw(screen)
         pygame.display.flip()
-    # print(board.level)
+
     pygame.quit()
 
 
